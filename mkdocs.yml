@@ -1,0 +1,63 @@
+site_name: aiogram Ton Connect
+site_description: aiogram-tonconnect seamlessly integrates TonConnect into aiogram bots, simplifying wallet connections and transactions with a ready UI. Effortless middleware for enhancing your aiogram-based bots.
+site_url: https://nessshon.github.io/aiogram-tonconnect
+repo_name: aiogram-tonconnect
+repo_url: https://github.com/nessshon/aiogram-tonconnect
+edit_uri: https://github.com/nessshon/aiogram-tonconnect/tree/main/docs
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - content.code.copy
+    - content.action.view
+    - search.suggest
+    - search.highlight
+    - navigation.footer
+    - content.tabs.link
+
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+
+nav:
+  - Overview: 'index.md'
+  - User Guide:
+      - Getting started: 'tutorial/user-guide/getting-started.md'
+      - Connecting wallet: 'tutorial/user-guide/connecting-wallet.md'
+      - Sending transactions: 'tutorial/user-guide/sending-transaction.md'
+  - Advanced Guide:
+      - Customizing texts: 'tutorial/advanced-guide/customizing-texts.md'
+      - Customizing buttons: 'tutorial/advanced-guide/customizing-buttons.md'
+      - Multilanguage support: 'tutorial/advanced-guide/multilanguage-support.md'
+      - Your QRcode provider: 'tutorial/advanced-guide/your-qrcode-provider.md'
+
+extra:
+  analytics:
+    provider: google
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/nessshon
+    - icon: fontawesome/brands/telegram
+      link: https://t.me/nessshon
