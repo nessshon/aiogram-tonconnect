@@ -4,7 +4,7 @@ This Telegram bot, built using the aiogram-tonconnect library, serves as an exam
 Ton Connect in Telegram bots based on the Aiogram framework. The bot provides a user interface for seamless interaction
 with Ton Connect features.
 
-Bot example: [@aiogramTONConnectBot](https://t.me/aiogramTONConncetBot)
+Bot example: [@aiogramTONConnectBot](https://t.me/aiogramTONConnectBot)
 
 ## Installation
 
