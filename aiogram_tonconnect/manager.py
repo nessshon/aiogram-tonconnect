@@ -301,21 +301,21 @@ class ATCManager:
                 await self.tonconnect.restore_connection()
 
                 if self.tonconnect.connected:
+                    state_data = await self.state.get_data()
+                    app_wallet = AppWallet(**state_data.get("app_wallet"))
                     account_wallet = AccountWallet(
                         address=self.tonconnect.account.address,
                         state_init=self.tonconnect.account.wallet_state_init,
                         public_key=self.tonconnect.account.public_key,
                         chain=self.tonconnect.account.chain,
                     )
-                    await self.state.update_data(account_wallet=account_wallet.to_dict())
 
-                    state_data = await self.state.get_data()
-                    app_wallet = AppWallet(**state_data.get("app_wallet"))
-                    callbacks = await self.connect_wallet_callbacks_storage.get()
                     self.middleware_data["account_wallet"] = account_wallet
                     self.middleware_data["app_wallet"] = app_wallet
-                    await callbacks.after_callback(**self.middleware_data)
+                    await self.state.update_data(account_wallet=account_wallet.to_dict())
 
+                    callbacks = await self.connect_wallet_callbacks_storage.get()
+                    await callbacks.after_callback(**self.middleware_data)
                     self.task_storage.remove()
                     return None
 
