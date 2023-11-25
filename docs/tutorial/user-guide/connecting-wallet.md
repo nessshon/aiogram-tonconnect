@@ -90,7 +90,7 @@ async def select_language_window(event_from_user: User, atc_manager: ATCManager,
     # Code for creating inline keyboard with language options
     reply_markup = Markup(inline_keyboard=[
         [Button(text="Русский", callback_data="ru"),
-         Button(text="Английский", callback_data="en")]
+         Button(text="English", callback_data="en")]
     ])
 
     # Sending the message and updating user state
@@ -125,8 +125,9 @@ async def main_menu_window(atc_manager: ATCManager, app_wallet: AppWallet,
     )
 
     # Code for creating inline keyboard with disconnect option
+    button_text = "Отключиться" if atc_manager.user.language_code == "ru" else "Disconnect"
     reply_markup = Markup(inline_keyboard=[
-        [Button(text="Отключиться", callback_data="disconnect")],
+        [Button(text=button_text, callback_data="disconnect")],
     ])
 
     # Sending the message and updating user state
