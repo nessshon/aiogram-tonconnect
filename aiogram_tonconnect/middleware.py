@@ -68,7 +68,13 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
         state_data = await state.get_data()
 
         account_wallet = state_data.get("account_wallet", None)
+        account_wallet = AccountWallet(**account_wallet) if account_wallet else None
+        data["account_wallet"] = account_wallet
+
         app_wallet = state_data.get("app_wallet", None)
+        app_wallet = AppWallet(**app_wallet) if app_wallet else None
+        data["app_wallet"] = app_wallet
+
         user: User = data.get("event_from_user")
 
         atc_user = ATCUser(
@@ -78,14 +84,17 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
                 user.language_code,
             ),
             last_transaction_boc=state_data.get("last_transaction_boc", None),
-            app_wallet=AppWallet(**app_wallet) if app_wallet else None,
-            account_wallet=AccountWallet(**account_wallet) if account_wallet else None,
+            app_wallet=app_wallet,
+            account_wallet=account_wallet,
         )
+        data["atc_user"] = atc_user
+
         tonconnect = AiogramTonConnect(
             storage=SessionStorage(self.redis, atc_user.id),
             manifest_url=self.manifest_url,
             exclude_wallets=self.exclude_wallets
         )
+        await tonconnect.restore_connection()
         atc_manager = ATCManager(
             redis=self.redis,
             tonconnect=tonconnect,
@@ -95,10 +104,6 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
             user=atc_user,
             data=data,
         )
-        await atc_manager.tonconnect.restore_connection()
-        data["account_wallet"] = account_wallet
-        data["app_wallet"] = app_wallet
         data["atc_manager"] = atc_manager
-        data["atc_user"] = atc_user
 
         return await handler(event, data)
