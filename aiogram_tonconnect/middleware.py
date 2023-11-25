@@ -75,15 +75,15 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
         app_wallet = AppWallet(**app_wallet) if app_wallet else None
         data["app_wallet"] = app_wallet
 
-        user: User = data.get("event_from_user")
+        user: User = data.get("event_from_user", None)
+        language_code = state_data.get("language_code", None)
+        language_code = language_code if language_code else user.language_code
+        last_transaction_boc = state_data.get("last_transaction_boc", None)
 
         atc_user = ATCUser(
             id=user.id,
-            language_code=state_data.get(
-                "language_code",
-                user.language_code,
-            ),
-            last_transaction_boc=state_data.get("last_transaction_boc", None),
+            language_code=language_code,
+            last_transaction_boc=last_transaction_boc,
             app_wallet=app_wallet,
             account_wallet=account_wallet,
         )
