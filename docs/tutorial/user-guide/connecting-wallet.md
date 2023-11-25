@@ -9,7 +9,7 @@
 - **open_connect_wallet_window:**
   The main method of the ATCManager class, used to present the wallet connection window to users.
 
-- **ConnectWallet Callbacks:**
+- **ConnectWalletCallbacks:**
   The core set of callbacks required by the open_connect_wallet_window method. It plays a decisive role in circulation
   actions during and after the wallet connection process.
 
@@ -265,4 +265,5 @@ To run the Bot, use the following command in your terminal:
 python -m bot
 ```
 
-The bot source code is available on [GitHub](https://github.com/nessshon/aiogram-tonconnect/blob/main/example/).
+The bot source code is available
+on [GitHub](https://github.com/nessshon/aiogram-tonconnect/blob/main/example/connecting-wallet/).
