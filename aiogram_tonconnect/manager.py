@@ -101,8 +101,9 @@ class ATCManager:
                 language_code in self.__text_message.texts_messages and
                 language_code in self.__inline_keyboard.texts_buttons
         ):
-            self.__text_message.language_code = self.__inline_keyboard.language_code = language_code
             await self.state.update_data(language_code=language_code)
+            self.user.language_code = language_code
+            self.__text_message.language_code = self.__inline_keyboard.language_code = language_code
             return None
 
         raise LanguageCodeNotSupported(
