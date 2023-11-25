@@ -1,6 +1,6 @@
 import time
 from base64 import urlsafe_b64encode
-from typing import Optional
+from typing import Optional, Union
 
 from pytoniq_core import begin_cell
 
@@ -24,7 +24,7 @@ class TONTransferTransaction(Transaction):
     def __init__(
             self,
             address: str,
-            amount: str,
+            amount: Union[int, float],
             comment: Optional[str] = "",
     ) -> None:
         payload = urlsafe_b64encode(
@@ -39,7 +39,7 @@ class TONTransferTransaction(Transaction):
                 TransactionMessage(
                     address=address,
                     payload=payload,
-                    amount=amount,
+                    amount=str(int(amount * 10 ** 9)),
                 ),
             ],
             valid_until=int(time.time() + 300),
@@ -105,7 +105,7 @@ class NFTTransferTransaction(Transaction):
             nft_address: str,
             recipient_address: str,
             response_address: str = None,
-            transfer_fee: str = str(int(0.05 * 10 ** 9)),
+            transfer_fee: Union[int, float] = 0.05,
     ) -> None:
         payload = urlsafe_b64encode(
             begin_cell()
@@ -124,7 +124,7 @@ class NFTTransferTransaction(Transaction):
                 TransactionMessage(
                     address=nft_address,
                     payload=payload,
-                    amount=transfer_fee,
+                    amount=str(int(transfer_fee * 10 ** 9)),
                 ),
             ],
             valid_until=int(time.time() + 300),
