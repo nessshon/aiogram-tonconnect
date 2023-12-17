@@ -10,7 +10,7 @@ It provides a ready-to-use UI and handles the interaction flow for connecting wa
 sending transactions. This library acts as a middleware, making it easy to incorporate TonConnect features into your
 existing aiogram-based bots.
 
-Check out the [documentation](https://nessshon.github.io/aiogram-tonconnect/).\
+Check out the [documentation](https://tonmendon.github.io/aiogram-tonconnect/).\
 Bot example [@aiogramTONConnectBot](https://t.me/aiogramTONConneсtBot/).
 
 ## Installation
