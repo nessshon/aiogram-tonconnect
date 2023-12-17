@@ -11,7 +11,7 @@ sending transactions. This library acts as a middleware, making it easy to incor
 existing aiogram-based bots.
 
 Check out the [documentation](https://tonmendon.github.io/aiogram-tonconnect/).\
-Bot example [@aiogramTONConnectBot](https://t.me/aiogramTONConneсtBot/).
+Bot example [@aiogramTONConnectBot](https://t.me/aiogramTONConnectBot/).
 
 ## Installation
 
