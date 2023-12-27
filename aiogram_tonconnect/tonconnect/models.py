@@ -16,6 +16,17 @@ class Base:
         """
         return asdict(self)
 
+    @classmethod
+    def from_dict(cls, data: Dict) -> "Base":
+        """
+        Create an instance of the Base class from a dictionary.
+
+        :param data: A dictionary containing data to initialize the instance.
+        :return: An instance of the class.
+        """
+        data = {k: v for k, v in data.items() if k in cls.__annotations__}
+        return cls(**data)  # noqa
+
 
 @dataclass
 class AppWallet(Base):
