@@ -18,7 +18,9 @@ REDIS_DSN = "redis://localhost:6379/0"
 MANIFEST_URL = "https://raw.githubusercontent.com/nessshon/aiogram-tonconnect/main/tonconnect-manifest.json"
 
 # List of wallets to exclude
-EXCLUDE_WALLETS = ["mytonwallet"]
+# Example:
+# EXCLUDE_WALLETS = ["mytonwallet"]
+EXCLUDE_WALLETS = []
 
 
 async def main():
