@@ -111,12 +111,14 @@ class ATCManager:
         )
 
     async def open_connect_wallet_window(
-            self, callbacks: Optional[ConnectWalletCallbacks] = None
+            self, callbacks: Optional[ConnectWalletCallbacks] = None,
+            button_wallet_width: int = 2,
     ) -> None:
         """
         Open the connect wallet window.
 
         :param callbacks: Callbacks to execute.
+        :param button_wallet_width: The width of the wallet buttons in the inline keyboard.
         """
 
         if self.tonconnect.connected:
@@ -142,6 +144,7 @@ class ATCManager:
         reply_markup = self.__inline_keyboard.connect_wallet(
             wallets, app_wallet, universal_url,
             wallet_name=app_wallet.name,
+            width=button_wallet_width,
         )
 
         await self.state.update_data(app_wallet=app_wallet.to_dict())
@@ -264,7 +267,7 @@ class ATCManager:
         """
         state_data = await self.state.get_data()
 
-        message_id = state_data.get("message_id", None)
+        message_id = state_data.get("message_id")
         if not message_id: return  # noqa:E701
 
         try:
