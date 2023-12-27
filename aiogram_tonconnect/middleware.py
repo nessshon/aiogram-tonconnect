@@ -67,18 +67,18 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
         state: FSMContext = data.get("state")
         state_data = await state.get_data()
 
-        account_wallet = state_data.get("account_wallet", None)
+        account_wallet = state_data.get("account_wallet")
         account_wallet = AccountWallet(**account_wallet) if account_wallet else None
         data["account_wallet"] = account_wallet
 
-        app_wallet = state_data.get("app_wallet", None)
+        app_wallet = state_data.get("app_wallet")
         app_wallet = AppWallet.from_dict(app_wallet) if app_wallet else None
         data["app_wallet"] = app_wallet
 
-        user: User = data.get("event_from_user", None)
-        language_code = state_data.get("language_code", None)
+        user: User = data.get("event_from_user")
+        language_code = state_data.get("language_code")
         language_code = language_code if language_code else user.language_code
-        last_transaction_boc = state_data.get("last_transaction_boc", None)
+        last_transaction_boc = state_data.get("last_transaction_boc")
 
         atc_user = ATCUser(
             id=user.id,
