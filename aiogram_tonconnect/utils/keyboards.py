@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import List, Dict
 
-from aiogram.utils.keyboard import InlineKeyboardMarkup as Markup
+from aiogram.utils.keyboard import InlineKeyboardMarkup as Markup, InlineKeyboardBuilder
 from aiogram.utils.keyboard import InlineKeyboardButton as Button
 
 from ..tonconnect.models import AppWallet
@@ -43,6 +43,7 @@ class InlineKeyboardBase(metaclass=ABCMeta):
             selected_wallet: AppWallet,
             universal_url: str,
             wallet_name: str,
+            width: int = 2,
     ) -> Markup:
         """
         Create an inline keyboard for connecting a wallet.
@@ -51,6 +52,7 @@ class InlineKeyboardBase(metaclass=ABCMeta):
         :param selected_wallet: The selected app wallet.
         :param universal_url: Universal URL for connecting the wallet.
         :param wallet_name: Name of the wallet.
+        :param width: Number of wallet buttons per row.
         :return: Inline keyboard markup.
         """
         raise NotImplementedError
@@ -129,10 +131,8 @@ class InlineKeyboard(InlineKeyboardBase):
             selected_wallet: AppWallet,
             universal_url: str,
             wallet_name: str,
+            width: int = 2,
     ) -> Markup:
-        inline_keyboard = [
-            [self._get_button("connect_wallet", universal_url, wallet_name=wallet_name)]
-        ]
         generated_buttons = [
             *[
                 Button(
@@ -141,9 +141,11 @@ class InlineKeyboard(InlineKeyboardBase):
                 ) for wallet in wallets
             ]
         ]
-        inline_keyboard.append(generated_buttons)
-        inline_keyboard.append([self._get_button("back")])
-        return Markup(inline_keyboard=inline_keyboard)
+        builder = InlineKeyboardBuilder()
+        builder.row(self._get_button("connect_wallet", universal_url, wallet_name=wallet_name))
+        builder.row(*generated_buttons, width=width)
+        builder.row(self._get_button("back"))
+        return builder.as_markup()
 
     def send_transaction(self, wallet_name: str, url: str) -> Markup:
         inline_keyboard = [
