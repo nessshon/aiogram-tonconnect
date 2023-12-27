@@ -132,7 +132,7 @@ class ATCManager:
         state_data = await self.state.get_data()
         wallets = await self.tonconnect.get_wallets()
 
-        app_wallet = AppWallet(**state_data.get("app_wallet", wallets[0].to_dict()))
+        app_wallet = AppWallet.from_dict(state_data.get("app_wallet", wallets[0].to_dict()))
         universal_url = await self.tonconnect.connect(app_wallet.to_dict())
 
         qrcode_url = self.__qrcode_provider.create_connect_wallet_url(universal_url, app_wallet.image)
@@ -303,7 +303,7 @@ class ATCManager:
 
                 if self.tonconnect.connected:
                     state_data = await self.state.get_data()
-                    app_wallet = AppWallet(**state_data.get("app_wallet"))
+                    app_wallet = AppWallet.from_dict(state_data.get("app_wallet"))
                     account_wallet = AccountWallet(
                         address=self.tonconnect.account.address,
                         state_init=self.tonconnect.account.wallet_state_init,

@@ -147,7 +147,7 @@ class WalletManager:
         supported_wallets = []
         for wallet in wallets:
             try:
-                wallet_obj = AppWallet(**wallet)
+                wallet_obj = AppWallet.from_dict(wallet)
             except (Exception,):
                 continue
             for bridge in wallet_obj.bridge:
@@ -166,7 +166,7 @@ class WalletManager:
         cached_wallets = await self.cache_manager.get_wallets()
 
         if cached_wallets:
-            return [AppWallet(**w) for w in cached_wallets]
+            return [AppWallet.from_dict(w) for w in cached_wallets]
         try:
             wallets = await self.__fetch()
             wallets = self.__exclude(wallets)
@@ -177,4 +177,4 @@ class WalletManager:
             wallets = await self.fallback_manager.get_wallets()
             await self.cache_manager.save_wallets(wallets)
 
-        return [AppWallet(**w) for w in wallets]
+        return [AppWallet.from_dict(w) for w in wallets]
