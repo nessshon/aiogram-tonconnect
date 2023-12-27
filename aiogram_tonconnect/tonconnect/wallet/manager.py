@@ -157,6 +157,15 @@ class WalletManager:
                     break
         return supported_wallets
 
+    async def __save_wallets(self, wallets: List[Dict[str, Any]]) -> None:
+        await self.cache_manager.save_wallets(wallets)
+        await self.fallback_manager.save_wallets(wallets)
+
+    def __process_wallets(self, wallets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        excluded_wallets = self.__exclude(wallets)
+        supported_wallets = self.__get_supported(excluded_wallets)
+        return supported_wallets
+
     async def get_wallets(self) -> List[AppWallet]:
         """
         Get the list of AiogramTonConnect wallets.
@@ -166,15 +175,13 @@ class WalletManager:
         cached_wallets = await self.cache_manager.get_wallets()
 
         if cached_wallets:
-            return [AppWallet.from_dict(w) for w in cached_wallets]
+            supported_wallets = self.__process_wallets(cached_wallets)
+            return [AppWallet.from_dict(w) for w in supported_wallets]
         try:
-            wallets = await self.__fetch()
-            wallets = self.__exclude(wallets)
-            wallets = self.__get_supported(wallets)
-            await self.cache_manager.save_wallets(wallets)
-            await self.fallback_manager.save_wallets(wallets)
+            default_wallets = await self.__fetch()
         except (Exception,):
-            wallets = await self.fallback_manager.get_wallets()
-            await self.cache_manager.save_wallets(wallets)
+            default_wallets = await self.fallback_manager.get_wallets()
 
-        return [AppWallet.from_dict(w) for w in wallets]
+        supported_wallets = self.__process_wallets(default_wallets)
+        await self.__save_wallets(default_wallets)
+        return [AppWallet.from_dict(w) for w in supported_wallets]
