@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="aiogram-tonconnect",
-    version="0.10.0",
+    version="0.10.1",
     author="nessshon",
     description="aiogram-tonconnect seamlessly integrates TonConnect into aiogram bots, "
                 "simplifying wallet connections and transactions with a ready UI. "
