@@ -8,6 +8,7 @@ from .models import Transaction, TransactionMessage
 
 __all__ = [
     "TONTransferTransaction",
+    "JettonTransferTransaction",
     "NFTTransferTransaction",
 ]
 
