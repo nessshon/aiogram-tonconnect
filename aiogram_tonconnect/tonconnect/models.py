@@ -104,6 +104,7 @@ class TransactionMessage(Base):
     address: str
     payload: str
     amount: str
+    stateInit: Optional[str] = ''
 
 
 @dataclass
@@ -128,8 +129,8 @@ class ConnectWalletCallbacks(Base):
     :param after_callback: Callable function to be executed after connecting the wallet.
     """
 
-    before_callback: Callable[[...], Awaitable]
-    after_callback: Callable[[...], Awaitable]
+    before_callback: Callable[..., Awaitable]
+    after_callback: Callable[..., Awaitable]
 
 
 @dataclass
@@ -141,5 +142,5 @@ class SendTransactionCallbacks(Base):
     :param after_callback: Callable function to be executed after sending the transaction.
     """
 
-    before_callback: Callable[[...], Awaitable]
-    after_callback: Callable[[...], Awaitable]
+    before_callback: Callable[..., Awaitable]
+    after_callback: Callable[..., Awaitable]
