@@ -1,4 +1,11 @@
-## aiogram TON Connect Bot
+## 🤖 aiogram TON Connect Bot
+
+[![TON](https://img.shields.io/badge/TON-grey?logo=TON&logoColor=40AEF0)](https://ton.org)
+[![Telegram Bot](https://img.shields.io/badge/Bot-grey?logo=telegram)](https://core.telegram.org/bots)
+[![Python](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
+[![License](https://img.shields.io/github/license/tonmendon/aiogram-tonconnect)](https://github.com/tonmendon/aiogram-tonconnect/blob/main/LICENSE)
+[![Redis](https://img.shields.io/badge/Redis-Yes?logo=redis&color=white)](https://redis.io/)
+[![Docker](https://img.shields.io/badge/Docker-blue?logo=docker&logoColor=white)](https://www.docker.com/)
 
 This Telegram bot, built using the aiogram-tonconnect library, serves as an example to demonstrate the integration of
 Ton Connect in Telegram bots based on the Aiogram framework. The bot provides a user interface for seamless interaction
