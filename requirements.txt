@@ -1,8 +1,8 @@
-aiofiles~=23.1.0
-aiogram==3.*
-aiohttp~=3.8.6
-cachetools~=5.3.2
-pydantic~=2.3.0
-pytonconnect~=0.3.0
-pytoniq-core~=0.1.14
-redis~=5.0.1
+aiofiles
+aiogram
+aiohttp
+cachetools
+pydantic
+pytonconnect
+pytoniq-core
+redis
