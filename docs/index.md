@@ -1,5 +1,7 @@
 # Aiogram Ton Connect Library
 
+<img src="https://telegra.ph//file/9e28473c8da8989fdf027.jpg">
+
 ## Introduction
 
 The aiogram-tonconnect library provides a ready-to-use UI for TON Connect in Telegram bots based on the aiogram
