@@ -110,7 +110,7 @@ class ATCManager:
             f"Language code '{language_code}' not in text message or button text"
         )
 
-    async def open_connect_wallet_window(
+    async def connect_wallet(
             self, callbacks: Optional[ConnectWalletCallbacks] = None,
             button_wallet_width: int = 2,
     ) -> None:
@@ -148,10 +148,10 @@ class ATCManager:
         )
 
         await self.state.update_data(app_wallet=app_wallet.to_dict())
-        await self.send_message(text=text, reply_markup=reply_markup)
+        await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.connect_wallet)
 
-    async def open_send_transaction_window(
+    async def send_transaction(
             self,
             callbacks: Optional[SendTransactionCallbacks] = None,
             transaction: Optional[Transaction] = None,
@@ -162,7 +162,6 @@ class ATCManager:
         :param callbacks: Callbacks to execute.
         :param transaction: The transaction details.
         """
-
         if transaction:
             await self.state.update_data(transaction=transaction.to_dict())
 
@@ -182,7 +181,7 @@ class ATCManager:
             self.user.app_wallet.name, universal_link,
         )
 
-        await self.send_message(text=text, reply_markup=reply_markup)
+        await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.send_transaction)
 
     async def _connect_wallet_timeout(self) -> None:
@@ -192,7 +191,7 @@ class ATCManager:
         text = self.__text_message.get("connect_wallet_timeout")
         reply_markup = self.__inline_keyboard.send_transaction_timeout()
 
-        await self.send_message(text=text, reply_markup=reply_markup)
+        await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.connect_wallet_timeout)
 
     async def _send_transaction_timeout(self) -> None:
@@ -202,7 +201,7 @@ class ATCManager:
         text = self.__text_message.get("send_transaction_timeout")
         reply_markup = self.__inline_keyboard.send_transaction_timeout()
 
-        await self.send_message(text=text, reply_markup=reply_markup)
+        await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.send_transaction_timeout)
 
     async def _send_transaction_rejected(self) -> None:
@@ -212,10 +211,10 @@ class ATCManager:
         text = self.__text_message.get("send_transaction_rejected")
         reply_markup = self.__inline_keyboard.send_transaction_rejected()
 
-        await self.send_message(text=text, reply_markup=reply_markup)
+        await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.send_transaction_rejected)
 
-    async def send_message(
+    async def _send_message(
             self,
             text: str,
             reply_markup: Optional[InlineKeyboardMarkup] = None,
@@ -320,7 +319,6 @@ class ATCManager:
 
                     callbacks = await self.connect_wallet_callbacks_storage.get()
                     await callbacks.after_callback(**self.middleware_data)
-                    self.task_storage.remove()
                     return None
 
             await self._connect_wallet_timeout()
@@ -329,7 +327,9 @@ class ATCManager:
             pass
         except Exception:
             raise
-
+        finally:
+            self.tonconnect.pause_connection()
+            self.task_storage.remove()
         return None
 
     async def __wait_send_transaction_task(self) -> None:
@@ -348,6 +348,9 @@ class ATCManager:
         :raises Exception: Any unexpected exception during the process.
         """
         try:
+            await self.tonconnect.restore_connection()
+            await self.tonconnect.unpause_connection()
+
             data = await self.state.get_data()
             transaction = data.get("transaction")
 
@@ -355,7 +358,6 @@ class ATCManager:
                 self.tonconnect.send_transaction(transaction=transaction),
                 timeout=300,
             )
-
             if result:
                 last_transaction_boc = result.get("boc")
                 self.user.last_transaction_boc = last_transaction_boc
@@ -364,7 +366,6 @@ class ATCManager:
                 callbacks = await self.send_transaction_callbacks_storage.get()
                 self.middleware_data["transaction_boc"] = last_transaction_boc
                 await callbacks.after_callback(**self.middleware_data)
-                self.task_storage.remove()
                 return None
 
         except UserRejectsError:
@@ -385,5 +386,7 @@ class ATCManager:
             pass
         except Exception:
             raise
-
+        finally:
+            self.tonconnect.pause_connection()
+            self.task_storage.remove()
         return None
