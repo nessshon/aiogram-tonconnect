@@ -70,7 +70,6 @@ class AiogramTonConnectHandlers:
         :param atc_manager: An instance of ATCManager.
         """
         if call.data == "back":
-            atc_manager.task_storage.remove()
             callbacks = await atc_manager.send_transaction_callbacks_storage.get()
             atc_manager.middleware_data["account_wallet"] = atc_manager.user.account_wallet
             await callbacks.before_callback(**atc_manager.middleware_data)
