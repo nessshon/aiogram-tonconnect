@@ -299,7 +299,7 @@ class ATCManager:
         :raises Exception: Any unexpected exception during the process.
         """
         try:
-            for _ in range(1, 360):
+            for _ in range(1, 361):
                 await asyncio.sleep(.5)
                 await self.tonconnect.restore_connection()
 
@@ -319,9 +319,9 @@ class ATCManager:
 
                     callbacks = await self.connect_wallet_callbacks_storage.get()
                     await callbacks.after_callback(**self.middleware_data)
-                    return None
-
-            await self._connect_wallet_timeout()
+                    break
+            else:
+                await self._connect_wallet_timeout()
 
         except asyncio.CancelledError:
             pass
@@ -330,7 +330,7 @@ class ATCManager:
         finally:
             self.tonconnect.pause_connection()
             self.task_storage.remove()
-        return None
+        return
 
     async def __wait_send_transaction_task(self) -> None:
         """
@@ -366,7 +366,6 @@ class ATCManager:
                 callbacks = await self.send_transaction_callbacks_storage.get()
                 self.middleware_data["transaction_boc"] = last_transaction_boc
                 await callbacks.after_callback(**self.middleware_data)
-                return None
 
         except UserRejectsError:
             current_state = await self.state.get_state()
@@ -389,4 +388,4 @@ class ATCManager:
         finally:
             self.tonconnect.pause_connection()
             self.task_storage.remove()
-        return None
+        return
