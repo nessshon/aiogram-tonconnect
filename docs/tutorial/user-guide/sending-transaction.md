@@ -156,38 +156,38 @@ The router is configured to filter messages and callback queries only from priva
 ```python title="handlers.py"
 @router.callback_query(UserState.main_menu)
 async def main_menu_handler(call: CallbackQuery, atc_manager: ATCManager) -> None:
-    """
-    Handler for the main menu callback.
+  """
+  Handler for the main menu callback.
 
-    :param call: The CallbackQuery object representing the callback.
-    :param atc_manager: ATCManager instance for managing TON Connect integration.
-    :return: None
-    """
-    # Check if the user clicked the "disconnect" button
-    if call.data == "disconnect":
-        # Check if wallet is connected before attempting to disconnect
-        if atc_manager.tonconnect.connected:
-            with suppress(WalletNotConnectedError):
-                # Disconnect from the wallet with suppress
-                # to handle WalletNotConnectedError
-                await atc_manager.tonconnect.disconnect()
+  :param call: The CallbackQuery object representing the callback.
+  :param atc_manager: ATCManager instance for managing TON Connect integration.
+  :return: None
+  """
+  # Check if the user clicked the "disconnect" button
+  if call.data == "disconnect":
+    # Check if wallet is connected before attempting to disconnect
+    if atc_manager.tonconnect.connected:
+      with suppress(WalletNotConnectedError):
+        # Disconnect from the wallet with suppress
+        # to handle WalletNotConnectedError
+        await atc_manager.tonconnect.disconnect()
 
-        # Create ConnectWalletCallbacks object with before_callback
-        # and after_callback functions
-        callbacks = ConnectWalletCallbacks(
-            before_callback=select_language_window,
-            after_callback=main_menu_window,
-        )
+    # Create ConnectWalletCallbacks object with before_callback
+    # and after_callback functions
+    callbacks = ConnectWalletCallbacks(
+      before_callback=select_language_window,
+      after_callback=main_menu_window,
+    )
 
-        # Open the connect wallet window using the ATCManager instance
-        # and the specified callbacks
-        await atc_manager.open_connect_wallet_window(callbacks)
+    # Open the connect wallet window using the ATCManager instance
+    # and the specified callbacks
+    await atc_manager.connect_wallet(callbacks)
 
-    elif call.data == "send_amount_ton":
-        await send_amount_ton_window(atc_manager)
+  elif call.data == "send_amount_ton":
+    await send_amount_ton_window(atc_manager)
 
-    # Acknowledge the callback query
-    await call.answer()
+  # Acknowledge the callback query
+  await call.answer()
 ```
 
 This handler fires when the user interacts with the main menu. It now handles disconnecting from the wallet and go to
@@ -254,7 +254,7 @@ async def send_amount_ton_message_handler(message: Message, atc_manager: ATCMana
                 after_callback=transaction_info_windows,
             )
             # Open the window for sending the transaction using the ATCManager instance
-            await atc_manager.open_send_transaction_window(
+            await atc_manager.send_transaction(
                 callbacks=callbacks,
                 transaction=transaction,
             )

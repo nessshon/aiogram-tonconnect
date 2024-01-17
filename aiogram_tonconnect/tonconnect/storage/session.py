@@ -32,7 +32,7 @@ class SessionStorage(IStorage):
         :param key: Original key.
         :return: Unique key combining the user_id and original key.
         """
-        return f"{self.user_id}{key}"
+        return f"{self.user_id}:{key}"
 
     async def set_item(self, key: str, value: str) -> None:
         """

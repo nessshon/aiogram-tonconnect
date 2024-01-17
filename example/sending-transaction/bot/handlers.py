@@ -60,7 +60,7 @@ async def select_language_handler(call: CallbackQuery, atc_manager: ATCManager) 
         )
         # Open the connect wallet window using the ATCManager instance
         # and the specified callbacks
-        await atc_manager.open_connect_wallet_window(callbacks)
+        await atc_manager.connect_wallet(callbacks)
 
     # Acknowledge the callback query
     await call.answer()
@@ -93,7 +93,7 @@ async def main_menu_handler(call: CallbackQuery, atc_manager: ATCManager) -> Non
 
         # Open the connect wallet window using the ATCManager instance
         # and the specified callbacks
-        await atc_manager.open_connect_wallet_window(callbacks)
+        await atc_manager.connect_wallet(callbacks)
 
     elif call.data == "send_amount_ton":
         await send_amount_ton_window(atc_manager)
@@ -154,7 +154,7 @@ async def send_amount_ton_message_handler(message: Message, atc_manager: ATCMana
                 after_callback=transaction_info_windows,
             )
             # Open the window for sending the transaction using the ATCManager instance
-            await atc_manager.open_send_transaction_window(
+            await atc_manager.send_transaction(
                 callbacks=callbacks,
                 transaction=transaction,
             )
