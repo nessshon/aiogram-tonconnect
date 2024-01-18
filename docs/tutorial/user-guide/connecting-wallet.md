@@ -6,11 +6,11 @@
   The main control class is which is responsible for managing the transition of windows, connecting a
   wallet and sending transactions.
 
-- **open_connect_wallet_window:**
+- **connect_wallet:**
   The main method of the ATCManager class, used to present the wallet connection window to users.
 
 - **ConnectWalletCallbacks:**
-  The core set of callbacks required by the open_connect_wallet_window method. It plays a decisive role in circulation
+  The core set of callbacks required by the connect_wallet method. It plays a decisive role in circulation
   actions during and after the wallet connection process.
 
 - **before_callback:**
@@ -22,7 +22,7 @@
   transmits comprehensive information for processors.
 
 The ATCManager class is automatically distributed to all handlers as an atc_manager object via middleware.
-The `open_connect_wallet_window` method, requiring one argument, ConnectWalletCallbacks acts as a gateway to present the
+The `connect_wallet` method, requiring one argument, ConnectWalletCallbacks acts as a gateway to present the
 wallet connection window. This set of callbacks, consisting of `before_callback` and `after_callback`.
 
 **Callback examples:**

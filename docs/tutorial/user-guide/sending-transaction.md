@@ -5,11 +5,11 @@ wallet.
 
 ## Description
 
-- **open_send_transaction_window:**
+- **send_transaction:**
   The main method of the ATCManager class, used to present users with a window for sending and confirming a transaction.
 
 - **SendTransactionCallbacks:**
-  The core set of callbacks required by the `open_send_transaction_window` method. It plays a decisive role in
+  The core set of callbacks required by the `send_transaction` method. It plays a decisive role in
   circulation actions during sending and after confirmation of the transaction.
 
 ## Callback Examples
