@@ -34,6 +34,6 @@ setuptools.setup(
     url="https://github.com/nessshon/aiogram-tonconnect/",
     project_urls={
         "Documentation": "https://tonmendon.github.io/aiogram-tonconnect/",
-        "Bot example": "https://t.me/aiogramTONConncetBot/",
+        "Bot example": "https://t.me/aiogramTONConnectBot/",
     },
 )
