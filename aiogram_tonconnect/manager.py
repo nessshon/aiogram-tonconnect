@@ -7,7 +7,11 @@ from typing import Dict, Any, Union, Optional
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, InlineKeyboardMarkup
+from aiogram.types import (
+    BufferedInputFile,
+    InlineKeyboardMarkup,
+    Message,
+)
 from aiogram.utils.markdown import hide_link
 from pytonconnect.exceptions import (
     UserRejectsError,
@@ -35,7 +39,7 @@ from .utils.exceptions import (
     MESSAGE_EDIT_ERRORS,
 )
 from .utils.keyboards import InlineKeyboardBase
-from .utils.qrcode import QRCodeProvider
+from .utils.qrcode import QRCode
 from .utils.states import TcState
 from .utils.texts import TextMessageBase
 
@@ -47,7 +51,8 @@ class ATCManager:
     :param user: The AiogramTonConnect user.
     :param redis: Redis instance for storage.
     :param tonconnect: AiogramTonConnect instance.
-    :param qrcode_provider: QRCodeProvider instance for generating QR codes.
+    :param qrcode_type: Type for the QR code, `url` or `bytes`.
+    :param qrcode_base_url: Base URL for generating the QR code (for qrcode_type `url`).
     :param text_message: TextMessageBase class for managing text messages.
     :param inline_keyboard: InlineKeyboardBase class for managing inline keyboards.
     :param data: Additional data.
@@ -59,7 +64,8 @@ class ATCManager:
             user: ATCUser,
             redis: Redis,
             tonconnect: AiogramTonConnect,
-            qrcode_provider: QRCodeProvider,
+            qrcode_type: str,
+            qrcode_base_url: str,
             text_message: TextMessageBase,
             inline_keyboard: InlineKeyboardBase,
             data: Dict[str, Any],
@@ -69,7 +75,8 @@ class ATCManager:
         self.redis: Redis = redis
         self.tonconnect: AiogramTonConnect = tonconnect
 
-        self.__qrcode_provider: QRCodeProvider = qrcode_provider
+        self.__qrcode_type: str = qrcode_type
+        self.__qrcode_base_url: str = qrcode_base_url
         self.__text_message: TextMessageBase = text_message
         self.__inline_keyboard: InlineKeyboardBase = inline_keyboard
 
@@ -120,6 +127,8 @@ class ATCManager:
         :param callbacks: Callbacks to execute.
         :param button_wallet_width: The width of the wallet buttons in the inline keyboard.
         """
+        if self.__qrcode_type == "bytes":
+            await self.send_message(self.__emoji)
 
         if self.tonconnect.connected:
             with suppress(WalletNotConnectedError):
@@ -136,20 +145,51 @@ class ATCManager:
 
         app_wallet = AppWallet.from_dict(state_data.get("app_wallet", wallets[0].to_dict()))
         universal_url = await self.tonconnect.connect(app_wallet.to_dict())
+        await self.state.update_data(app_wallet=app_wallet.to_dict())
 
-        qrcode_url = self.__qrcode_provider.create_connect_wallet_url(universal_url, app_wallet.image)
-        text = hide_link(qrcode_url) + self.__text_message.get("connect_wallet").format(
-            wallet_name=app_wallet.name
-        )
         reply_markup = self.__inline_keyboard.connect_wallet(
             wallets, app_wallet, universal_url,
             wallet_name=app_wallet.name,
             width=button_wallet_width,
         )
-
-        await self.state.update_data(app_wallet=app_wallet.to_dict())
-        await self._send_message(text=text, reply_markup=reply_markup)
+        text = self.__text_message.get("connect_wallet").format(
+            wallet_name=app_wallet.name
+        )
+        await self._send_connect_wallet_window(text, reply_markup, universal_url, app_wallet)
         await self.state.set_state(TcState.connect_wallet)
+
+    async def _send_connect_wallet_window(
+            self,
+            text: str,
+            reply_markup: InlineKeyboardMarkup,
+            universal_url: str,
+            app_wallet: AppWallet,
+    ) -> None:
+        """
+        Send the connect wallet window with appropriate content based on the qrcode_type.
+
+        :param text: The text message to be sent.
+        :param reply_markup: The inline keyboard markup for the message.
+        :param universal_url: The universal URL for connecting the wallet.
+        :param app_wallet: The AppWallet instance representing the connected wallet.
+        """
+        if self.__qrcode_type == "bytes":
+            photo = await QRCode.create_connect_wallet_image(
+                universal_url, app_wallet.image
+            )
+            await self._send_photo(
+                photo=BufferedInputFile(photo, "qr.png"),
+                caption=text,
+                reply_markup=reply_markup,
+            )
+        else:
+            qrcode_url = QRCode.create_connect_wallet_url(
+                universal_url, self.__qrcode_base_url, app_wallet.image
+            )
+            await self.send_message(
+                text=hide_link(qrcode_url) + text,
+                reply_markup=reply_markup,
+            )
 
     async def send_transaction(
             self,
@@ -181,7 +221,7 @@ class ATCManager:
             self.user.app_wallet.name, universal_link,
         )
 
-        await self._send_message(text=text, reply_markup=reply_markup)
+        await self.send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.send_transaction)
 
     async def _connect_wallet_timeout(self) -> None:
@@ -191,7 +231,7 @@ class ATCManager:
         text = self.__text_message.get("connect_wallet_timeout")
         reply_markup = self.__inline_keyboard.send_transaction_timeout()
 
-        await self._send_message(text=text, reply_markup=reply_markup)
+        await self.send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.connect_wallet_timeout)
 
     async def _send_transaction_timeout(self) -> None:
@@ -201,7 +241,7 @@ class ATCManager:
         text = self.__text_message.get("send_transaction_timeout")
         reply_markup = self.__inline_keyboard.send_transaction_timeout()
 
-        await self._send_message(text=text, reply_markup=reply_markup)
+        await self.send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.send_transaction_timeout)
 
     async def _send_transaction_rejected(self) -> None:
@@ -211,10 +251,35 @@ class ATCManager:
         text = self.__text_message.get("send_transaction_rejected")
         reply_markup = self.__inline_keyboard.send_transaction_rejected()
 
-        await self._send_message(text=text, reply_markup=reply_markup)
+        await self.send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.send_transaction_rejected)
 
-    async def _send_message(
+    async def _send_photo(
+            self,
+            photo: Any,
+            caption: Optional[str] = None,
+            reply_markup: Optional[InlineKeyboardMarkup] = None,
+    ) -> Message:
+        """
+        Send a photo to the user.
+
+        :param photo: The photo to send.
+        :param caption: The caption for the photo.
+        :param reply_markup: Optional InlineKeyboardMarkup for the message.
+        :return: Sent Message object.
+        :raises TelegramBadRequest: If there is an issue with sending the photo.
+        """
+        message = await self.bot.send_photo(
+            chat_id=self.user.id,
+            photo=photo,
+            caption=caption,
+            reply_markup=reply_markup,
+        )
+        await self._delete_previous_message()
+        await self.state.update_data(message_id=message.message_id)
+        return message
+
+    async def send_message(
             self,
             text: str,
             reply_markup: Optional[InlineKeyboardMarkup] = None,
@@ -328,7 +393,6 @@ class ATCManager:
         except Exception:
             raise
         finally:
-            self.tonconnect.pause_connection()
             self.task_storage.remove()
         return
 
@@ -364,7 +428,7 @@ class ATCManager:
                 await self.state.update_data(last_transaction_boc=last_transaction_boc)
 
                 callbacks = await self.send_transaction_callbacks_storage.get()
-                self.middleware_data["transaction_boc"] = last_transaction_boc
+                self.middleware_data["boc"] = last_transaction_boc
                 await callbacks.after_callback(**self.middleware_data)
 
         except UserRejectsError:

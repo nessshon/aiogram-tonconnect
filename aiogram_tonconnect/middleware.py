@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Any, Awaitable, Optional, Type, List
+from typing import Callable, Dict, Any, Awaitable, Optional, Type, List, Literal
 from aiogram import BaseMiddleware
 from aiogram.fsm.context import FSMContext
 from aiogram.types import TelegramObject, User
@@ -9,7 +9,6 @@ from .tonconnect import AiogramTonConnect
 from .tonconnect.storage import SessionStorage
 from .tonconnect.models import ATCUser, AppWallet, AccountWallet
 from .utils.keyboards import InlineKeyboardBase, InlineKeyboard
-from .utils.qrcode import QRCodeProviderBase, QRCodeProvider
 from .utils.texts import TextMessageBase, TextMessage
 
 
@@ -20,7 +19,8 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
     :param redis: Redis instance for storage.
     :param manifest_url: URL to the AiogramTonConnect manifest.
     :param exclude_wallets: List of wallet names to exclude.
-    :param qrcode_provider: QRCodeProviderBase instance for generating QR codes.
+    :param qrcode_type: Type for the QR code, `url` or `bytes`.
+    :param qrcode_base_url: Base URL for generating the QR code (for qrcode_type `url`).
     :param text_message: TextMessageBase class for managing text messages.
     :param inline_keyboard: InlineKeyboardBase class for managing inline keyboards.
     """
@@ -30,17 +30,16 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
             redis: Redis,
             manifest_url: str,
             exclude_wallets: List[str] = None,
-            qrcode_provider: Optional[QRCodeProviderBase] = None,
+            qrcode_type: Literal["url", "bytes"] = "bytes",
+            qrcode_base_url: Optional[str] = "https://qrcode.ness.su",
             text_message: Optional[Type[TextMessageBase]] = None,
             inline_keyboard: Optional[Type[InlineKeyboardBase]] = None,
     ) -> None:
         self.redis = redis
         self.manifest_url = manifest_url
         self.exclude_wallets = exclude_wallets
-
-        if not qrcode_provider:
-            qrcode_provider = QRCodeProvider()
-        self.qrcode_provider = qrcode_provider
+        self.qrcode_type = qrcode_type
+        self.qrcode_base_url = qrcode_base_url
 
         if not text_message:
             text_message = TextMessage
@@ -94,11 +93,11 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
             manifest_url=self.manifest_url,
             exclude_wallets=self.exclude_wallets
         )
-        await tonconnect.restore_connection()
         atc_manager = ATCManager(
             redis=self.redis,
             tonconnect=tonconnect,
-            qrcode_provider=self.qrcode_provider,
+            qrcode_type=self.qrcode_type,
+            qrcode_base_url=self.qrcode_base_url,
             text_message=self.text_message(atc_user.language_code),
             inline_keyboard=self.inline_keyboard(atc_user.language_code),
             user=atc_user,
