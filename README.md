@@ -1,4 +1,4 @@
-# 📦 aiogram TON Connect
+# 📦 aiogram TON Connect UI
 
 [![TON](https://img.shields.io/badge/TON-grey?logo=TON&logoColor=40AEF0)](https://ton.org)
 [![PyPI](https://img.shields.io/pypi/v/aiogram-tonconnect.svg?color=FFE873&labelColor=3776AB)](https://pypi.python.org/pypi/aiogram-tonconnect)
@@ -12,11 +12,12 @@
 ![Downloads](https://pepy.tech/badge/aiogram-tonconnect/month)
 ![Downloads](https://pepy.tech/badge/aiogram-tonconnect/week)
 
-**aiogram-tonconnect** is a library that simplifies the integration of TonConnect functionality into Telegram bots
-developed with the aiogram framework.
-It provides a ready-to-use UI and handles the interaction flow for connecting wallets and
-sending transactions. This library acts as a middleware, making it easy to incorporate TonConnect features into your
-existing aiogram-based bots.
+**Aiogram TON Connect UI** is a middleware library that streamlines the integration
+of [TON Connect](https://github.com/ton-connect) technology into Telegram bots based
+on [aiogram](https://github.com/aiogram/). It offers a pre-built user interface and orchestrates the interaction flow
+for connecting wallets and initiating transactions. The library takes care of all user interactions with TON Connect
+within the bot, encompassing the presentation of QR codes, texts, and keyboards, along with the handling of timeouts and
+user cancellations.
 
 Check out the [documentation](https://tonmendon.github.io/aiogram-tonconnect/).\
 Bot example [@aiogramTONConnectBot](https://t.me/aiogramTONConnectBot/).
@@ -29,51 +30,17 @@ pip install aiogram-tonconnect
 
 ## Features
 
-* **TonConnect Integration:**
-
-  Simplifies the integration of TonConnect functionality with Telegram bots.
-
-* **Built with Aiogram:**
-
-  Developed using the Aiogram framework, providing convenience in operation.
-
-* **Ready-to-Use User Interface:**
-
-  Offers a ready-to-use user interface that manages the interaction flow for connecting to wallets and sending
-  transactions.
-
-* **Middleware Functionality:**
-
-  Acts as middleware, making it easier to incorporate TonConnect features into existing Aiogram-based bots.
-
-* **Multilingual Support:**
-
-  Supports multiple languages, making it easy to add new languages and translate messages and button texts.
-
-* **QR Code Provider:**
-
-  Includes a QR code provider that generates QR codes for connecting to wallets. There is an option to deploy a custom
-  QR code provider API with open-source code on [GitHub](https://github.com/nessshon/qrcode-fastapi), speeding up
-  response time and reducing load on the public API.
-
-* **Full Customization:**
-
-  Allows complete customization of texts and buttons. Simply inherit the base class and insert your own texts.
+* Ready-to-Use User Interface
+* Middleware Functionality
+* Interface Customization
+* Multilingual Support
+* QR Code Generation
 
 ## Screenshots
 
-<a href="https://telegra.ph//file/3608fb4c335d5a4cd6fd2.jpg" target="_blank">
-  <img src="https://telegra.ph//file/3608fb4c335d5a4cd6fd2.jpg" width="100" alt="Image 1">
-</a>
-<a href="https://telegra.ph//file/a90b6affec7e267f60320.jpg" target="_blank">
-  <img src="https://telegra.ph//file/a90b6affec7e267f60320.jpg" width="100" alt="Image 3">
-</a>
-<a href="https://telegra.ph//file/8730c64a11601c6ed6884.jpg" target="_blank">
-  <img src="https://telegra.ph//file/8730c64a11601c6ed6884.jpg" width="100" alt="Image 2">
-</a>
-<a href="https://telegra.ph//file/5a49ffa9f8330f66cdcac.jpg" target="_blank">
-  <img src="https://telegra.ph//file/5a49ffa9f8330f66cdcac.jpg" width="100" alt="Image 4">
-</a>
+|                                                                                                                      |                                                                                                                      |                                                                                                                      |                                                                                                                      |                                                                                                                      |
+|----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| [![Image 1](https://telegra.ph//file/555175fd35c05370a64d4.jpg)](https://telegra.ph//file/555175fd35c05370a64d4.jpg) | [![Image 2](https://telegra.ph//file/ef770d825534cf049c1bb.jpg)](https://telegra.ph//file/ef770d825534cf049c1bb.jpg) | [![Image 3](https://telegra.ph//file/502a80771bc07acc6e93b.jpg)](https://telegra.ph//file/502a80771bc07acc6e93b.jpg) | [![Image 4](https://telegra.ph//file/99443226ba404a86586ad.jpg)](https://telegra.ph//file/99443226ba404a86586ad.jpg) | [![Image 5](https://telegra.ph//file/74fba6fca9c273d5f6f30.jpg)](https://telegra.ph//file/74fba6fca9c273d5f6f30.jpg) |
 
 ## Acknowledgments
 
