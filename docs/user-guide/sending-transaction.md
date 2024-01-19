@@ -3,7 +3,7 @@
 In this example, we will use the previous code and add new functionality to it for sending a transaction request to the
 wallet.
 
-## Description
+### Description
 
 - **send_transaction:**
   The main method of the ATCManager class, used to present users with a window for sending and confirming a transaction.
@@ -12,7 +12,7 @@ wallet.
   The core set of callbacks required by the `send_transaction` method. It plays a decisive role in
   circulation actions during sending and after confirmation of the transaction.
 
-## Callback Examples
+### Callback Examples
 
 In our example, two new callback functions will be created: `send_amount_ton_window` and `transaction_info_windows`.
 
@@ -26,13 +26,13 @@ In our example, two new callback functions will be created: `send_amount_ton_win
 
 ---
 
-## Writing Windows
+### Writing Windows
 
 This section defines window functions for callbacks and user state.Let's add two new states to it. Open the `windows.py`
 file and insert the following
 code:
 
-### User State
+#### User State
 
 ```python title="windows.py"
 from aiogram.fsm.state import StatesGroup, State
@@ -51,7 +51,7 @@ class UserState(StatesGroup):
 In this section, a custom UserState class is defined, which extends the StatesGroup class from the aiogram.fsm.state
 module. It represents different states that the user can be in.
 
-### Send Amount TON Window
+#### Send Amount TON Window
 
 ```python title="windows.py"
 async def send_amount_ton_window(atc_manager: ATCManager, **_) -> None:
@@ -81,7 +81,7 @@ async def send_amount_ton_window(atc_manager: ATCManager, **_) -> None:
 This function represents the window for sending the TON amount. It generates text based on the user's language and
 creates an inline keyboard for navigation.
 
-### Transaction Info Window
+#### Transaction Info Window
 
 ```python title="windows.py"
 async def transaction_info_windows(atc_manager: ATCManager, transaction_boc: str, **_) -> None:
@@ -114,12 +114,12 @@ async def transaction_info_windows(atc_manager: ATCManager, transaction_boc: str
 This function represents the transaction information window. It generates text based on the user's language and includes
 transaction details with an option to go back to the main menu.
 
-## Writing Handlers
+### Writing Handlers
 
 This section defines command and callback request handlers. We need to modify the main menu handler to process the “send
 transaction” button and add new handlers. Open the handlers.py file and paste the following code:
 
-### Router Configuration
+#### Router Configuration
 
 ```python title="handlers.py"
 from contextlib import suppress
@@ -151,7 +151,7 @@ router.callback_query.filter(F.message.chat.type == ChatType.PRIVATE)
 
 The router is configured to filter messages and callback queries only from private chats.
 
-### Main Menu Handler
+#### Main Menu Handler
 
 ```python title="handlers.py"
 @router.callback_query(UserState.main_menu)
@@ -193,7 +193,7 @@ async def main_menu_handler(call: CallbackQuery, atc_manager: ATCManager) -> Non
 This handler fires when the user interacts with the main menu. It now handles disconnecting from the wallet and go to
 the TON sending amount window.
 
-### Send Amount TON Handler
+#### Send Amount TON Handler
 
 ```python title="handlers.py"
 @router.callback_query(UserState.send_amount_ton)
@@ -217,7 +217,7 @@ async def send_amount_ton_handler(call: CallbackQuery, atc_manager: ATCManager, 
 This handler is triggered when a user interacts with the send amount TON window. It handles navigating back to the main
 menu.
 
-### Send Amount TON Message Handler
+#### Send Amount TON Message Handler
 
 ```python title="handlers.py"
 @router.message(UserState.send_amount_ton)
@@ -266,7 +266,7 @@ async def send_amount_ton_message_handler(message: Message, atc_manager: ATCMana
 This handler is triggered when a user sends a message in the send amount TON state. It validates the entered amount,
 creates a TONTransferTransaction, and opens the window for sending the transaction.
 
-### Transaction Info Handler
+#### Transaction Info Handler
 
 ```python title="handlers.py"
 @router.callback_query(UserState.transaction_info)

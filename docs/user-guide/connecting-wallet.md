@@ -1,4 +1,4 @@
-## Introduction
+### Introduction
 
 **Description:**
 
@@ -39,12 +39,12 @@ In our example, two callback functions will be created: `select_language_window`
 
 ---
 
-## Writing windows
+### Writing windows
 
 This section defines window functions for callbacks and user state.
 Open the `windows.py` file and insert the following code:
 
-### User State
+#### User State
 
 ```python title="windows.py"
 from aiogram.fsm.state import StatesGroup, State
@@ -66,7 +66,7 @@ class UserState(StatesGroup):
 In this section, a custom UserState class is defined, which extends the StatesGroup class from the aiogram.fsm.state
 module. It represents different states that the user can be in.
 
-### Select language window
+#### Select language window
 
 ```python title="windows.py"
 async def select_language_window(event_from_user: User, atc_manager: ATCManager, **_) -> None:
@@ -101,7 +101,7 @@ async def select_language_window(event_from_user: User, atc_manager: ATCManager,
 This function represents the window for selecting the language. It generates appropriate text based on the user's
 language and creates an inline keyboard for language selection.
 
-### Main menu window
+#### Main menu window
 
 ```python title="windows.py"
 async def main_menu_window(atc_manager: ATCManager, app_wallet: AppWallet,
@@ -140,12 +140,12 @@ an inline keyboard with a disconnect option.
 
 ---
 
-## Writing Handlers
+### Writing Handlers
 
 In this section, handlers for commands and callback queries are defined.
 Open the `handlers.py` file and insert the following code:
 
-### Router Configuration
+#### Router Configuration
 
 ```python title="handlers.py"
 from contextlib import suppress
@@ -169,7 +169,7 @@ router.callback_query.filter(F.message.chat.type == ChatType.PRIVATE)
 
 The router is configured to filter messages and callback queries only from private chats.
 
-### Start Command Handler
+#### Start Command Handler
 
 ```python title="handlers.py"
 @router.message(Command("start"))
@@ -187,7 +187,7 @@ async def start_command(message: Message, atc_manager: ATCManager) -> None:
 
 This handler is triggered when a user sends the /start command. It initiates the language selection window.
 
-### Select Language Handler
+#### Select Language Handler
 
 ```python title="handlers.py"
 @router.callback_query(UserState.select_language)
@@ -219,7 +219,7 @@ async def select_language_handler(call: CallbackQuery, atc_manager: ATCManager) 
 
 This handler is triggered when a user selects a language. It updates the language and opens the connect wallet window.
 
-### Main Menu Handler
+#### Main Menu Handler
 
 ```python title="handlers.py"
 @router.callback_query(UserState.main_menu)

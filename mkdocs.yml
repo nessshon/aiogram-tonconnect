@@ -1,9 +1,9 @@
-site_name: aiogram Ton Connect
-site_description: aiogram-tonconnect seamlessly integrates TonConnect into aiogram bots, simplifying wallet connections and transactions with a ready UI. Effortless middleware for enhancing your aiogram-based bots.
-site_url: https://nessshon.github.io/aiogram-tonconnect
+site_name: aiogram Ton Connect UI
+site_description: TON Connect UI for aiogram-based bots.
+site_url: https://tonmendon.github.io/aiogram-tonconnect
 repo_name: aiogram-tonconnect
-repo_url: https://github.com/nessshon/aiogram-tonconnect
-edit_uri: https://github.com/nessshon/aiogram-tonconnect/tree/main/docs
+repo_url: https://github.com/tonmendon/aiogram-tonconnect
+edit_uri: https://github.com/tonmendon/aiogram-tonconnect/tree/main/docs
 
 theme:
   name: material
@@ -27,9 +27,9 @@ theme:
     - content.action.view
     - search.suggest
     - search.highlight
+    - navigation.tabs
     - navigation.footer
     - content.tabs.link
-
 
 markdown_extensions:
   - admonition
@@ -41,17 +41,18 @@ markdown_extensions:
       alternate_style: true
   - attr_list
 
+
 nav:
   - Overview: 'index.md'
   - User Guide:
-      - Getting started: 'tutorial/user-guide/getting-started.md'
-      - Connecting wallet: 'tutorial/user-guide/connecting-wallet.md'
-      - Sending transactions: 'tutorial/user-guide/sending-transaction.md'
+      - Getting started: 'user-guide/getting-started.md'
+      - Connecting wallet: 'user-guide/connecting-wallet.md'
+      - Sending transactions: 'user-guide/sending-transaction.md'
   - Advanced Guide:
-      - Customizing texts: 'tutorial/advanced-guide/customizing-texts.md'
-      - Customizing buttons: 'tutorial/advanced-guide/customizing-buttons.md'
-      - Multilanguage support: 'tutorial/advanced-guide/multilanguage-support.md'
-      - Your QRcode provider: 'tutorial/advanced-guide/your-qrcode-provider.md'
+      - QRcode provider: 'advanced-guide/qrcode-provider.md'
+      - Customizing texts: 'advanced-guide/customizing-texts.md'
+      - Customizing buttons: 'advanced-guide/customizing-buttons.md'
+      - Multilanguage support: 'advanced-guide/multilanguage-support.md'
 
 extra:
   analytics:

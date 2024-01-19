@@ -1,22 +1,18 @@
-# Preparation
+### Installation
 
-## Installation
-
-First, make sure to install Redis:
-
-```bash
-sudo apt install redis
-```
-
-Next, install aiogram-tonconnect:
+Install the library:
 
 ```bash
 pip install aiogram-tonconnect
 ```
 
----
+Additionally, you will need to install Redis to store data about connected wallets.
 
-## Creating manifest.json
+```bash
+apt install redis
+```
+
+### Creating manifest.json
 
 Before you need to create a manifest to pass meta-information to the wallet.
 The manifest is a JSON file with the following format:
@@ -43,7 +39,7 @@ Where:
 
 ---
 
-## Bot structure
+### Bot structure
 
 The primary structure of the bot includes the following elements:
 
@@ -64,7 +60,7 @@ Where:
 
 ---
 
-## Bot initialization
+### Bot initialization
 
 Open the `__main__.py` file and insert the following code:
 
@@ -103,6 +99,7 @@ async def main():
             redis=storage.redis,
             manifest_url=MANIFEST_URL,
             exclude_wallets=EXCLUDE_WALLETS,
+            qrcode_type="url",  # or "bytes"
         )
     )
 
@@ -118,9 +115,5 @@ if __name__ == '__main__':
 
     asyncio.run(main())
 ```
-
-This code initializes and launches the Telegram bot using the aiogram platform, integrated with TON Connect to provide
-wallet functionality. It configures the bot`s parameters, storage, middleware, and handlers, and then runs the bot with
-a long poll.
 
 **Note**: Ensure that you replace the values of the variables `BOT_TOKEN`, `REDIS_DSN`, and others with the actual ones.
