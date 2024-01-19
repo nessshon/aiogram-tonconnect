@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="aiogram-tonconnect",
-    version="0.11.1",
+    version="0.12.0",
     author="nessshon",
     description="TON Connect UI for aiogram bots.",
     long_description=long_description,
@@ -16,9 +16,11 @@ setuptools.setup(
         "aiogram",
         "aiohttp",
         "cachetools",
+        "pillow",
         "pydantic",
         "pytonconnect",
         "pytoniq-core",
+        "qrcode-styled",
         "redis",
     ],
     classifiers=[
