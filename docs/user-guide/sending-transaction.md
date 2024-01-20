@@ -84,22 +84,22 @@ creates an inline keyboard for navigation.
 #### Transaction Info Window
 
 ```python title="windows.py"
-async def transaction_info_windows(atc_manager: ATCManager, transaction_boc: str, **_) -> None:
+async def transaction_info_windows(atc_manager: ATCManager, boc: str, **_) -> None:
     """
     Displays the transaction information window.
 
     :param atc_manager: ATCManager instance for managing TON Connect integration.
-    :param transaction_boc: The BOC (Bag of Cells) representing the transaction.
+    :param boc: The BOC (Bag of Cells) representing the transaction.
     :param _: Unused data from the middleware.
     :return: None
     """
     # Determine text based on user's language and show transaction details
     text = (
         "Transaction successfully sent!\n\n"
-        f"boc:\n{transaction_boc}"
+        f"boc:\n{boc}"
         if atc_manager.user.language_code == "en" else
         "Транзакция успешно отправлена!\n\n"
-        f"boc:\n{transaction_boc}"
+        f"boc:\n{boc}"
     )
     button_text = "‹ Go to main" if atc_manager.user.language_code == "en" else "‹ На главную"
     reply_markup = Markup(inline_keyboard=[

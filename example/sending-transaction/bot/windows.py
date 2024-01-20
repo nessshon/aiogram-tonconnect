@@ -102,22 +102,22 @@ async def send_amount_ton_window(atc_manager: ATCManager, **_) -> None:
     await atc_manager.state.set_state(UserState.send_amount_ton)
 
 
-async def transaction_info_windows(atc_manager: ATCManager, transaction_boc: str, **_) -> None:
+async def transaction_info_windows(atc_manager: ATCManager, boc: str, **_) -> None:
     """
     Displays the transaction information window.
 
     :param atc_manager: ATCManager instance for managing TON Connect integration.
-    :param transaction_boc: The BOC (Bag of Cells) representing the transaction.
+    :param boc: The BOC (Bag of Cells) representing the transaction.
     :param _: Unused data from the middleware.
     :return: None
     """
     # Determine text based on user's language and show transaction details
     text = (
         "Транзакция успешно отправлена!\n\n"
-        f"boc:\n{transaction_boc}"
+        f"boc:\n{boc}"
         if atc_manager.user.language_code == "ru" else
         "Transaction successfully sent!\n\n"
-        f"boc:\n{transaction_boc}"
+        f"boc:\n{boc}"
     )
     button_text = "‹ На главную" if atc_manager.user.language_code == "ru" else "‹ Go to main"
     reply_markup = Markup(inline_keyboard=[
