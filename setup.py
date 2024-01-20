@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="aiogram-tonconnect",
-    version="0.12.0",
+    version="0.12.1",
     author="nessshon",
     description="TON Connect UI for aiogram bots.",
     long_description=long_description,
