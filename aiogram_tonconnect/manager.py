@@ -137,15 +137,17 @@ class ATCManager:
         if callbacks:
             await self.connect_wallet_callbacks_storage.add(callbacks)
 
-        task = asyncio.create_task(self.__wait_connect_wallet_task())
-        self.task_storage.add(task)
-
         state_data = await self.state.get_data()
         wallets = await self.tonconnect.get_wallets()
 
-        app_wallet = AppWallet.from_dict(state_data.get("app_wallet", wallets[0].to_dict()))
+        app_wallet_dict = state_data.get("app_wallet") or wallets[0].to_dict()
+        app_wallet = AppWallet.from_dict(app_wallet_dict)
+
         universal_url = await self.tonconnect.connect(app_wallet.to_dict())
         await self.state.update_data(app_wallet=app_wallet.to_dict())
+
+        task = asyncio.create_task(self.__wait_connect_wallet_task())
+        self.task_storage.add(task)
 
         reply_markup = self.__inline_keyboard.connect_wallet(
             wallets, app_wallet, universal_url,
@@ -366,8 +368,6 @@ class ATCManager:
         try:
             for _ in range(1, 361):
                 await asyncio.sleep(.5)
-                await self.tonconnect.restore_connection()
-
                 if self.tonconnect.connected:
                     state_data = await self.state.get_data()
                     app_wallet = AppWallet.from_dict(state_data.get("app_wallet"))
