@@ -218,7 +218,7 @@ class ATCManager:
         )
         universal_link = self.user.app_wallet.universal_url
         if self.user.app_wallet.app_name == "telegram-wallet":
-            universal_link = universal_link + "&startattach=tonconnect"  # noqa
+            universal_link = universal_link + "=tonconnect"  # noqa
         reply_markup = self.__inline_keyboard.send_transaction(
             self.user.app_wallet.name, universal_link,
         )

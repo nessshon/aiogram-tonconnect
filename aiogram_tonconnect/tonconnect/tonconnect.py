@@ -4,6 +4,7 @@ from pytonconnect import TonConnect as BaseTonConnect
 from pytonconnect.storage import IStorage
 from pytonconnect.logger import _LOGGER  # noqa
 
+from .provider import BridgeProvider
 from .wallet.manager import WalletManager
 from .models import AppWallet
 
@@ -39,7 +40,6 @@ class AiogramTonConnect(BaseTonConnect):
         kwargs["storage"] = storage
         kwargs["manifest_url"] = manifest_url
         super().__init__(*args, **kwargs)
-
         self.wallet_manager = WalletManager(exclude_wallets=exclude_wallets)
 
     async def get_wallets(self=None) -> List[AppWallet]:
@@ -63,3 +63,8 @@ class AiogramTonConnect(BaseTonConnect):
             await self._storage.remove_item(IStorage.KEY_CONNECTION)
             await self._storage.remove_item(IStorage.KEY_LAST_EVENT_ID)
             self._on_wallet_disconnected()
+
+    def _create_provider(self, wallet: dict) -> BridgeProvider:
+        provider = BridgeProvider(self._storage, wallet)
+        provider.listen(self._wallet_events_listener)
+        return provider
