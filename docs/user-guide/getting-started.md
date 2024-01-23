@@ -99,7 +99,7 @@ async def main():
             redis=storage.redis,
             manifest_url=MANIFEST_URL,
             exclude_wallets=EXCLUDE_WALLETS,
-            qrcode_type="url",  # or "bytes"
+            qrcode_type="url",  # or "bytes" if you prefer to generate QR codes locally.
         )
     )
 

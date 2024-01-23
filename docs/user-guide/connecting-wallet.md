@@ -238,6 +238,7 @@ async def main_menu_handler(call: CallbackQuery, atc_manager: ATCManager) -> Non
             with suppress(WalletNotConnectedError):
                 # Disconnect from the wallet with suppress
                 # to handle WalletNotConnectedError
+                await atc_manager.tonconnect.restore_connection()
                 await atc_manager.tonconnect.disconnect()
 
         # Create ConnectWalletCallbacks object with before_callback 
