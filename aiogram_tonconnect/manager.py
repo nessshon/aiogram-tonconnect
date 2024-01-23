@@ -132,6 +132,7 @@ class ATCManager:
 
         if self.tonconnect.connected:
             with suppress(WalletNotConnectedError):
+                await self.tonconnect.restore_connection()
                 await self.tonconnect.disconnect()
 
         if callbacks:

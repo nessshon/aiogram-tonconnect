@@ -21,6 +21,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
     :param redirect_url: URL to the redirect after connecting.
     :param exclude_wallets: List of wallet names to exclude.
     :param qrcode_type: Type for the QR code, `url` or `bytes`.
+        Choose "bytes" if you prefer to generate QR codes locally.
     :param qrcode_base_url: Base URL for generating the QR code (for qrcode_type `url`).
     :param text_message: TextMessageBase class for managing text messages.
     :param inline_keyboard: InlineKeyboardBase class for managing inline keyboards.
