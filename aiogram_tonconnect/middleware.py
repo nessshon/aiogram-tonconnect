@@ -18,6 +18,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
 
     :param redis: Redis instance for storage.
     :param manifest_url: URL to the AiogramTonConnect manifest.
+    :param redirect_url: URL to the redirect after connecting.
     :param exclude_wallets: List of wallet names to exclude.
     :param qrcode_type: Type for the QR code, `url` or `bytes`.
     :param qrcode_base_url: Base URL for generating the QR code (for qrcode_type `url`).
@@ -29,6 +30,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
             self,
             redis: Redis,
             manifest_url: str,
+            redirect_url: str = None,
             exclude_wallets: List[str] = None,
             qrcode_type: Literal["url", "bytes"] = "bytes",
             qrcode_base_url: Optional[str] = "https://qrcode.ness.su",
@@ -37,6 +39,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
     ) -> None:
         self.redis = redis
         self.manifest_url = manifest_url
+        self.redirect_url = redirect_url
         self.exclude_wallets = exclude_wallets
         self.qrcode_type = qrcode_type
         self.qrcode_base_url = qrcode_base_url
@@ -91,6 +94,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
         tonconnect = AiogramTonConnect(
             storage=SessionStorage(self.redis, atc_user.id),
             manifest_url=self.manifest_url,
+            redirect_url=self.redirect_url,
             exclude_wallets=self.exclude_wallets
         )
         atc_manager = ATCManager(

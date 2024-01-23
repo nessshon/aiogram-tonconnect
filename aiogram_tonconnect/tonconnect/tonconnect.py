@@ -15,6 +15,7 @@ class AiogramTonConnect(BaseTonConnect):
 
     :param storage: An instance of IStorage for data storage.
     :param manifest_url: URL to the manifest file.
+    :param redirect_url: URL to the redirect after connecting.
     :param exclude_wallets: Optional list of wallet names to exclude.
     :param args: Additional positional arguments.
     :param kwargs: Additional keyword arguments.
@@ -24,6 +25,7 @@ class AiogramTonConnect(BaseTonConnect):
             self,
             storage: IStorage,
             manifest_url: str,
+            redirect_url: str = None,
             exclude_wallets: Optional[List[str]] = None,
             *args,
             **kwargs,
@@ -33,6 +35,7 @@ class AiogramTonConnect(BaseTonConnect):
 
         :param storage: An instance of IStorage for data storage.
         :param manifest_url: URL to the manifest file.
+        :param redirect_url: URL to the redirect after connecting.
         :param exclude_wallets: Optional list of wallet names to exclude.
         :param args: Additional positional arguments.
         :param kwargs: Additional keyword arguments.
@@ -40,6 +43,7 @@ class AiogramTonConnect(BaseTonConnect):
         kwargs["storage"] = storage
         kwargs["manifest_url"] = manifest_url
         super().__init__(*args, **kwargs)
+        self.redirect_url = redirect_url
         self.wallet_manager = WalletManager(exclude_wallets=exclude_wallets)
 
     async def get_wallets(self=None) -> List[AppWallet]:
@@ -65,6 +69,6 @@ class AiogramTonConnect(BaseTonConnect):
             self._on_wallet_disconnected()
 
     def _create_provider(self, wallet: dict) -> BridgeProvider:
-        provider = BridgeProvider(self._storage, wallet)
+        provider = BridgeProvider(self._storage, wallet, redirect_url=self.redirect_url)
         provider.listen(self._wallet_events_listener)
         return provider
