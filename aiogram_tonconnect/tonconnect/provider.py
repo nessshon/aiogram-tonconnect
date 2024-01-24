@@ -8,13 +8,12 @@ class BridgeProvider(BaseBridgeProvider):
         self.redirect_url = redirect_url
         super().__init__(storage, wallet)
 
-    def _generate_tg_universal_url(self, universal_url: str, request: dict, redirect_url: str = None):
+    def _generate_tg_universal_url(self, universal_url: str, request: dict):
         universal_url = universal_url.replace("attach=wallet", "startattach=")
         link = self._generate_regular_universal_url('about:blank', request)
         link_params = link.split('?')[1]
 
-        if redirect_url is not None:
-            link_params += f"&ret={redirect_url}"
+        link_params += f"&ret={self.redirect_url}" if self.redirect_url else "&ret=back"
 
         start_attach = (
                 'tonconnect-' + link_params
