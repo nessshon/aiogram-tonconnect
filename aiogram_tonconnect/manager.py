@@ -15,7 +15,7 @@ from aiogram.types import (
 from aiogram.utils.markdown import hide_link
 from redis.asyncio import Redis
 
-from .pytonconnect.exceptions import (
+from pytonconnect.exceptions import (
     UserRejectsError,
     WalletNotConnectedError,
 )
@@ -132,9 +132,7 @@ class ATCManager:
             await self.send_message(self.__emoji)
 
         if self.tonconnect.connected:
-            with suppress(WalletNotConnectedError):
-                await self.tonconnect.restore_connection()
-                await self.tonconnect.disconnect()
+            await self.disconnect_wallet()
 
         if callbacks:
             await self.connect_wallet_callbacks_storage.add(callbacks)
@@ -228,7 +226,9 @@ class ATCManager:
         )
         universal_url = self.user.app_wallet.universal_url
         if self.user.app_wallet.app_name == "telegram-wallet":
-            universal_url = universal_url.replace("attach=wallet", "startattach=tonconnect")
+            universal_url = universal_url.replace(
+                "attach=wallet", "startattach=tonconnect-ret__back"
+            )
         reply_markup = self.__inline_keyboard.send_transaction(
             self.user.app_wallet.name, universal_url,
         )
