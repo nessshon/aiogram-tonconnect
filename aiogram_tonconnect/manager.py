@@ -13,11 +13,12 @@ from aiogram.types import (
     Message,
 )
 from aiogram.utils.markdown import hide_link
-from pytonconnect.exceptions import (
+from redis.asyncio import Redis
+
+from .pytonconnect.exceptions import (
     UserRejectsError,
     WalletNotConnectedError,
 )
-from redis.asyncio import Redis
 
 from .tonconnect import AiogramTonConnect
 from .tonconnect.storage import (
@@ -193,6 +194,14 @@ class ATCManager:
                 text=hide_link(qrcode_url) + text,
                 reply_markup=reply_markup,
             )
+
+    async def disconnect_wallet(self) -> None:
+        """
+        Disconnect the connected wallet.
+        """
+        with suppress(WalletNotConnectedError):
+            await self.tonconnect.restore_connection()
+            await self.tonconnect.disconnect()
 
     async def send_transaction(
             self,
