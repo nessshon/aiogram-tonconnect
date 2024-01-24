@@ -66,7 +66,9 @@ class ConnectWalletCallbackStorage(CallbackStorageBase):
     async def get(self) -> ConnectWalletCallbacks:
         async with self.redis.client() as client:
             serialized_value = await client.hget(self.collection, key=str(self.user_id))
-            return ConnectWalletCallbacks(**pickle.loads(serialized_value)) if serialized_value else None
+            return ConnectWalletCallbacks(
+                **pickle.loads(serialized_value)  # type: ignore
+            ) if serialized_value else None
 
     async def add(self, connect_wallet_callbacks: ConnectWalletCallbacks) -> None:
         async with self.redis.client() as client:
@@ -91,7 +93,9 @@ class SendTransactionCallbackStorage(CallbackStorageBase):
     async def get(self) -> SendTransactionCallbacks:
         async with self.redis.client() as client:
             serialized_value = await client.hget(self.collection, key=str(self.user_id))
-            return SendTransactionCallbacks(**pickle.loads(serialized_value)) if serialized_value else None
+            return SendTransactionCallbacks(
+                **pickle.loads(serialized_value)  # type: ignore
+            ) if serialized_value else None
 
     async def add(self, callbacks: SendTransactionCallbacks) -> None:
         async with self.redis.client() as client:
