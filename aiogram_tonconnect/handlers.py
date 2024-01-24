@@ -22,6 +22,8 @@ class AiogramTonConnectHandlers:
         :param call: The CallbackQuery instance.
         :param atc_manager: An instance of ATCManager.
         """
+        atc_manager.task_storage.remove()
+
         if atc_manager.tonconnect.connected:
             with suppress(WalletNotConnectedError):
                 await atc_manager.tonconnect.disconnect()
@@ -69,6 +71,8 @@ class AiogramTonConnectHandlers:
         :param call: The CallbackQuery instance.
         :param atc_manager: An instance of ATCManager.
         """
+        atc_manager.task_storage.remove()
+
         if call.data == "back":
             callbacks = await atc_manager.send_transaction_callbacks_storage.get()
             atc_manager.middleware_data["account_wallet"] = atc_manager.user.account_wallet
