@@ -71,11 +71,8 @@ async def main_menu_handler(call: CallbackQuery, atc_manager: ATCManager) -> Non
     if call.data == "disconnect":
         # Check if wallet is connected before attempting to disconnect
         if atc_manager.tonconnect.connected:
-            with suppress(WalletNotConnectedError):
-                # Disconnect from the wallet with suppress
-                # to handle WalletNotConnectedError
-                await atc_manager.tonconnect.restore_connection()
-                await atc_manager.tonconnect.disconnect()
+            # Disconnect from the wallet
+            await atc_manager.disconnect_wallet()
 
         # Create ConnectWalletCallbacks object with before_callback
         # and after_callback functions
