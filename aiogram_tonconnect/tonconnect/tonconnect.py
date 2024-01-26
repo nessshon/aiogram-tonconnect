@@ -54,20 +54,6 @@ class AiogramTonConnect(BaseTonConnect):
         """
         return await self.wallet_manager.get_wallets()
 
-    async def disconnect(self):
-        """Disconnect from wallet and drop current session."""
-        if not self.connected:
-            _LOGGER.warning("Disconnecting from wallet but it's not connected.")
-        try:
-            if self._provider:
-                await self._provider.disconnect()
-        except Exception as e:
-            _LOGGER.error(e)
-        finally:
-            await self._storage.remove_item(IStorage.KEY_CONNECTION)
-            await self._storage.remove_item(IStorage.KEY_LAST_EVENT_ID)
-            self._on_wallet_disconnected()
-
     def _create_provider(self, wallet: dict) -> BridgeProvider:
         provider = BridgeProvider(self._storage, wallet, redirect_url=self.redirect_url)
         provider.listen(self._wallet_events_listener)
