@@ -3,7 +3,7 @@
 [![TON](https://img.shields.io/badge/TON-grey?logo=TON&logoColor=40AEF0)](https://ton.org)
 [![PyPI](https://img.shields.io/pypi/v/aiogram-tonconnect.svg?color=FFE873&labelColor=3776AB)](https://pypi.python.org/pypi/aiogram-tonconnect)
 ![Python Versions](https://img.shields.io/badge/Python-3.7%20--%203.12-black?color=FFE873&labelColor=3776AB)
-[![License](https://img.shields.io/github/license/tonmendon/aiogram-tonconnect)](https://github.com/tonmendon/aiogram-tonconnect/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/nessshon/aiogram-tonconnect)](https://github.com/nessshon/aiogram-tonconnect/blob/main/LICENSE)
 
 
 <img src="https://telegra.ph//file/9e28473c8da8989fdf027.jpg">
@@ -19,7 +19,7 @@ for connecting wallets and initiating transactions. The library takes care of al
 within the bot, encompassing the presentation of QR codes, texts, and keyboards, along with the handling of timeouts and
 user cancellations.
 
-Check out the [documentation](https://tonmendon.github.io/aiogram-tonconnect/).\
+Check out the [documentation](https://nessshon.github.io/aiogram-tonconnect/).\
 Bot example [@aiogramTONConnectBot](https://t.me/aiogramTONConnectBot/).
 
 ## Installation
@@ -70,5 +70,5 @@ submit a pull request.
 ## License
 
 This repository is distributed under
-the [MIT License](https://github.com/tonmendon/aiogram-tonconnect/blob/main/LICENSE). Feel free to use, modify, and
+the [MIT License](https://github.com/nessshon/aiogram-tonconnect/blob/main/LICENSE). Feel free to use, modify, and
 distribute the code in accordance with the terms of the license.
