@@ -1,9 +1,9 @@
 site_name: aiogram Ton Connect UI
 site_description: TON Connect UI for aiogram-based bots.
-site_url: https://tonmendon.github.io/aiogram-tonconnect
+site_url: https://nessshon.github.io/aiogram-tonconnect
 repo_name: aiogram-tonconnect
-repo_url: https://github.com/tonmendon/aiogram-tonconnect
-edit_uri: https://github.com/tonmendon/aiogram-tonconnect/tree/main/docs
+repo_url: https://github.com/nessshon/aiogram-tonconnect
+edit_uri: https://github.com/nessshon/aiogram-tonconnect/tree/main/docs
 
 theme:
   name: material
