@@ -4,6 +4,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram_tonconnect.handlers import AiogramTonConnectHandlers
 from aiogram_tonconnect.middleware import AiogramTonConnectMiddleware
+from aiogram_tonconnect.utils.qrcode import QRUrlProvider
 
 from .handlers import router
 from .throttling import ThrottlingMiddleware
@@ -40,6 +41,7 @@ async def main():
             redis=storage.redis,
             manifest_url=MANIFEST_URL,
             exclude_wallets=EXCLUDE_WALLETS,
+            qrcode_provider=QRUrlProvider(),
         )
     )
 

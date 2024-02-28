@@ -1,57 +1,76 @@
 import base64
+from abc import ABCMeta, abstractmethod
 
 from .generator import generate_qrcode
 
 __all__ = [
-    "QRCode",
+    "QRImageProviderBase",
+    "QRUrlProviderBase",
+
+    "QRImageProvider",
+    "QRUrlProvider",
 ]
 
 
-class QRCode:
-    """
-    Uses the 'qrcode.ness.su' or your own service to create a QR code with specific parameters.
-    """
+class QRImageProviderBase(metaclass=ABCMeta):
 
     @classmethod
-    async def create_connect_wallet_image(
-            cls,
-            universal_url: str,
-            wallet_image_url: str,
-    ) -> bytes:
+    @abstractmethod
+    async def create_connect_wallet_image(cls, universal_url: str, *args, **kwargs) -> bytes:
         """
         Create a QR code image for connecting a wallet.
 
         :param universal_url: Universal URL for connecting the wallet.
-        :param wallet_image_url: Image URL associated with the wallet.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional keyword arguments.
         :return: Bytes representing the QR code image.
         """
-        return await generate_qrcode(
-            universal_url,
-            border=7,
-            box_size=20,
-            image_url=wallet_image_url,
-            image_padding=20,
-            image_round=50,
+        raise NotImplementedError(
+            "Implement the method to generate the QR code image "
+            "in bytes from the universal_url data."
         )
 
+
+class QRUrlProviderBase(metaclass=ABCMeta):
+
     @classmethod
-    def create_connect_wallet_url(
-            cls,
-            universal_url: str,
-            qrcode_base_url: str,
-            wallet_image_url: str,
-    ) -> str:
+    @abstractmethod
+    async def create_connect_wallet_image_url(cls, universal_url: str, *args, **kwargs) -> str:
         """
         Create a URL for connecting a wallet and generate a QR code.
 
         :param universal_url: Universal URL for connecting the wallet.
-        :param qrcode_base_url: Base URL for generating the QR code.
-        :param wallet_image_url: Image URL associated with the wallet.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional keyword arguments.
         :return: URL for generating the QR code.
         """
+        raise NotImplementedError(
+            "Implement the method to generate the QR code and retry the URL string "
+            "using your API from the universal_url data."
+        )
+
+
+class QRImageProvider(QRImageProviderBase):
+
+    @classmethod
+    async def create_connect_wallet_image(cls, universal_url: str, *args, **kwargs) -> bytes:
+        return await generate_qrcode(
+            universal_url,
+            border=7,
+            box_size=20,
+            image_url=args[0],
+            image_padding=20,
+            image_round=50,
+        )
+
+
+class QRUrlProvider(QRUrlProviderBase):
+
+    @classmethod
+    async def create_connect_wallet_image_url(cls, universal_url: str, *args, **kwargs) -> str:
         return (
-            f"{qrcode_base_url}/create?"
+            f"https://qrcode.ness.su/create?"
             f"box_size=20&border=7&image_padding=20"
             f"&data={base64.b64encode(universal_url.encode()).decode()}"
-            f"&image_url={base64.b64encode(wallet_image_url.encode()).decode()}"
+            f"&image_url={base64.b64encode(args[0].encode()).decode()}"
         )

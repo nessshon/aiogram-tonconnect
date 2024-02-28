@@ -45,7 +45,10 @@ from .utils.exceptions import (
 )
 from .utils.keyboards import InlineKeyboardBase
 from .utils.proof import generate_payload, check_payload
-from .utils.qrcode import QRCode
+from .utils.qrcode import (
+    QRImageProviderBase,
+    QRUrlProviderBase,
+)
 from .utils.states import TcState
 from .utils.texts import TextMessageBase
 
@@ -57,10 +60,9 @@ class ATCManager:
     :param user: The AiogramTonConnect user.
     :param redis: Redis instance for storage.
     :param tonconnect: AiogramTonConnect instance.
-    :param qrcode_type: Type for the QR code, `url` or `bytes`.
-    :param qrcode_base_url: Base URL for generating the QR code (for qrcode_type `url`).
     :param text_message: TextMessageBase class for managing text messages.
     :param inline_keyboard: InlineKeyboardBase class for managing inline keyboards.
+    :param qrcode_provider: QRImageProviderBase or QRUrlProviderBase instance.
     :param data: Additional data.
     """
 
@@ -69,10 +71,9 @@ class ATCManager:
             user: ATCUser,
             redis: Redis,
             tonconnect: AiogramTonConnect,
-            qrcode_type: str,
-            qrcode_base_url: str,
             text_message: TextMessageBase,
             inline_keyboard: InlineKeyboardBase,
+            qrcode_provider: Union[QRImageProviderBase, QRUrlProviderBase],
             data: Dict[str, Any],
     ) -> None:
         self.user: ATCUser = user
@@ -80,10 +81,9 @@ class ATCManager:
         self.tonconnect: AiogramTonConnect = tonconnect
 
         self.__data: Dict[str, Any] = data
-        self.__qrcode_type: str = qrcode_type
-        self.__qrcode_base_url: str = qrcode_base_url
-        self.__text_message: TextMessageBase = text_message
-        self.__inline_keyboard: InlineKeyboardBase = inline_keyboard
+        self.__text_message = text_message
+        self.__inline_keyboard = inline_keyboard
+        self.__qrcode_provider = qrcode_provider
 
         self.bot: Bot = data.get("bot")
         self.state: FSMContext = data.get("state")
@@ -130,7 +130,7 @@ class ATCManager:
         :param callbacks: Callbacks to execute.
         :param check_proof: True to check ton_proof False ton_addr.
         """
-        if self.__qrcode_type == "bytes":
+        if isinstance(self.__qrcode_provider, QRImageProviderBase):
             text = self.__text_message.get("loader_text")
             await self._send_message(text)
 
@@ -203,8 +203,8 @@ class ATCManager:
         :param universal_url: The universal URL for connecting the wallet.
         :param app_wallet: The AppWallet instance representing the connected wallet.
         """
-        if self.__qrcode_type == "bytes":
-            photo = await QRCode.create_connect_wallet_image(
+        if isinstance(self.__qrcode_provider, QRImageProviderBase):
+            photo = await self.__qrcode_provider.create_connect_wallet_image(
                 universal_url, app_wallet.image
             )
             await self._send_photo(
@@ -213,8 +213,8 @@ class ATCManager:
                 reply_markup=reply_markup,
             )
         else:
-            qrcode_url = QRCode.create_connect_wallet_url(
-                universal_url, self.__qrcode_base_url, app_wallet.image
+            qrcode_url = await self.__qrcode_provider.create_connect_wallet_image_url(
+                universal_url, app_wallet.image
             )
             await self._send_message(
                 text=hide_link(qrcode_url) + text,
