@@ -17,7 +17,7 @@ class Address(BaseModel):
     - hex_address (str): Raw TON address in the format "workchain_id:key".
 
     :Methods:
-    - __str__(): Returns a user-friendly address with urlSafe=true and bouncable=false format.
+    - __str__(): Returns a user-friendly address with urlSafe=true and bounceable=false format.
     - to_raw(): Returns the raw TON address.
     - to_userfriendly(test_only: bool = False): Returns a user-friendly address with optional testnet support.
     """
@@ -25,7 +25,7 @@ class Address(BaseModel):
 
     def __str__(self) -> str:
         """
-        Returns a user-friendly address with urlSafe=true and bouncable=false format.
+        Returns a user-friendly address with urlSafe=true and bounceable=false format.
         """
         return raw_to_userfriendly(self.hex_address)
 
@@ -66,7 +66,7 @@ def raw_to_userfriendly(address: str, test_only: bool = False) -> str:
     :param test_only: The flag indicating if the address is bounceable. Defaults to False.
     :return: The user-friendly address string, encoded in base64 and URL-safe.
     """
-    tag = 0x11
+    tag = 0x51
     if test_only:
         tag ^= 0x80
     workchain_id, key = address.split(':')
