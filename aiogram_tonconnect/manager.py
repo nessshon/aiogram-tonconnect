@@ -37,7 +37,8 @@ from .tonconnect.models import (
 from .utils.address import Address
 from .utils.exceptions import (
     LanguageCodeNotSupported,
-    LastTransactionNotFound,
+    RetryConnectWalletError,
+    RetrySendTransactionError,
     MESSAGE_DELETE_ERRORS,
     MESSAGE_EDIT_ERRORS,
 )
@@ -121,14 +122,13 @@ class ATCManager:
         )
 
     async def connect_wallet(
-            self, callbacks: Optional[ConnectWalletCallbacks] = None,
-            button_wallet_width: int = 2,
+            self,
+            callbacks: ConnectWalletCallbacks,
     ) -> None:
         """
         Open the connect wallet window.
 
         :param callbacks: Callbacks to execute.
-        :param button_wallet_width: The width of the wallet buttons in the inline keyboard.
         """
         if self.__qrcode_type == "bytes":
             await self._send_message(self.__emoji)
@@ -136,8 +136,7 @@ class ATCManager:
         if self.tonconnect.connected:
             await self.disconnect_wallet()
 
-        if callbacks:
-            await self.connect_wallet_callbacks_storage.add(callbacks)
+        await self.connect_wallet_callbacks_storage.add(callbacks)
 
         state_data = await self.state.get_data()
         wallets = await self.tonconnect.get_wallets()
@@ -154,13 +153,26 @@ class ATCManager:
         reply_markup = self.__inline_keyboard.connect_wallet(
             wallets, app_wallet, universal_url,
             wallet_name=app_wallet.name,
-            width=button_wallet_width,
         )
         text = self.__text_message.get("connect_wallet").format(
             wallet_name=app_wallet.name
         )
         await self._send_connect_wallet_window(text, reply_markup, universal_url, app_wallet)
         await self.state.set_state(TcState.connect_wallet)
+
+    async def retry_connect_wallet(self) -> None:
+        """
+        Retry open the connect wallet window.
+        """
+        callbacks = await self.connect_wallet_callbacks_storage.get()
+
+        if callbacks is None:
+            raise RetryConnectWalletError(
+                "No callbacks found for connect wallet. "
+                "You need a connect wallet first."
+            )
+
+        await self.connect_wallet(callbacks)
 
     async def _send_connect_wallet_window(
             self,
@@ -239,11 +251,18 @@ class ATCManager:
         data = await self.state.get_data()
 
         try:
-            transaction = Transaction(**data.get("transaction"))
-            callbacks = await self.send_transaction_callbacks_storage.get()
+            transaction = Transaction.model_validate(data.get("transaction"))
         except KeyError:
-            raise LastTransactionNotFound(
+            raise RetrySendTransactionError(
                 "Last transaction not found. "
+                "You need to send a transaction first."
+            )
+
+        callbacks = await self.send_transaction_callbacks_storage.get()
+
+        if callbacks is None:
+            raise RetrySendTransactionError(
+                "No callbacks found for send transaction. "
                 "You need to send a transaction first."
             )
 

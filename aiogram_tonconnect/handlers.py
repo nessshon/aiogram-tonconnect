@@ -33,7 +33,7 @@ class AiogramTonConnectHandlers:
             app_wallet_name = call.data.split(":")[1]
             app_wallet = next((w for w in wallets if w.app_name == app_wallet_name), wallets[0])
             await atc_manager.state.update_data(app_wallet=app_wallet.model_dump())
-            await atc_manager.connect_wallet()
+            await atc_manager.retry_connect_wallet()
 
         elif call.data == "back":
             callbacks = await atc_manager.connect_wallet_callbacks_storage.get()
@@ -53,7 +53,7 @@ class AiogramTonConnectHandlers:
         :param atc_manager: An instance of ATCManager.
         """
         if call.data == "retry":
-            await atc_manager.connect_wallet()
+            await atc_manager.retry_connect_wallet()
         elif call.data == "back":
             callbacks = await atc_manager.connect_wallet_callbacks_storage.get()
             await callbacks.before_callback(**atc_manager.middleware_data)
