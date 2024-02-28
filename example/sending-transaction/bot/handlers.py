@@ -1,11 +1,9 @@
-from contextlib import suppress
 from typing import Union
 
 from aiogram import Router, F
 from aiogram.enums import ChatType
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
-from pytonconnect.exceptions import WalletNotConnectedError
 
 from aiogram_tonconnect import ATCManager
 from aiogram_tonconnect.tonconnect.models import ConnectWalletCallbacks, SendTransactionCallbacks
@@ -142,7 +140,7 @@ async def send_amount_ton_message_handler(message: Message, atc_manager: ATCMana
         # If the amount is valid, create a TONTransferTransaction
         if amount_ton:
             transaction = TONTransferTransaction(
-                address=atc_manager.user.account_wallet.address,
+                address=atc_manager.user.account_wallet.address.to_userfriendly(),
                 amount=amount_ton,
                 comment="Hello from @aiogramTONConnectBot!"
             )

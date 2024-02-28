@@ -1,10 +1,7 @@
-from contextlib import suppress
-
 from aiogram import Router, F
 from aiogram.enums import ChatType
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
-from pytonconnect.exceptions import WalletNotConnectedError
 
 from aiogram_tonconnect import ATCManager
 from aiogram_tonconnect.tonconnect.models import ConnectWalletCallbacks
