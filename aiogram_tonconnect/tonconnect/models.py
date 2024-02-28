@@ -1,6 +1,8 @@
 from dataclasses import dataclass, asdict
 from typing import Awaitable, Callable, Dict, List, Optional
 
+from aiogram_tonconnect.utils.address import Address
+
 
 @dataclass
 class Base:
@@ -66,7 +68,7 @@ class AccountWallet(Base):
     :param chain: Optional chain information.
     """
 
-    address: Optional[str] = None
+    address: Optional[Address] = None
     state_init: Optional[str] = None
     public_key: Optional[str] = None
     chain: Optional[int] = None

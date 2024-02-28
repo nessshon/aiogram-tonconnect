@@ -34,6 +34,7 @@ from .tonconnect.models import (
     Transaction,
     ATCUser,
 )
+from .utils.address import Address
 from .utils.exceptions import (
     LanguageCodeNotSupported,
     MESSAGE_DELETE_ERRORS,
@@ -382,7 +383,7 @@ class ATCManager:
                     state_data = await self.state.get_data()
                     app_wallet = AppWallet.from_dict(state_data.get("app_wallet"))
                     account_wallet = AccountWallet(
-                        address=self.tonconnect.account.address,
+                        address=Address(self.tonconnect.account.address),
                         state_init=self.tonconnect.account.wallet_state_init,
                         public_key=self.tonconnect.account.public_key,
                         chain=self.tonconnect.account.chain,
