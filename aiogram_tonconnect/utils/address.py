@@ -1,13 +1,15 @@
 import base64
 import struct
 
+from pydantic import BaseModel
+
 __all__ = [
     "Address",
     "raw_to_userfriendly",
 ]
 
 
-class Address:
+class Address(BaseModel):
     """
     Represents a TON address with methods for user-friendly display and conversion.
 
@@ -19,9 +21,7 @@ class Address:
     - to_raw(): Returns the raw TON address.
     - to_userfriendly(test_only: bool = False): Returns a user-friendly address with optional testnet support.
     """
-
-    def __init__(self, hex_address: str) -> None:
-        self.hex_address = hex_address
+    hex_address: str
 
     def __str__(self) -> str:
         """

@@ -75,7 +75,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
         data["account_wallet"] = account_wallet
 
         app_wallet = state_data.get("app_wallet")
-        app_wallet = AppWallet.from_dict(app_wallet) if app_wallet else None
+        app_wallet = AppWallet(**app_wallet) if app_wallet else None
         data["app_wallet"] = app_wallet
 
         user: User = data.get("event_from_user")

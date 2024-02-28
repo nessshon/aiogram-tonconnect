@@ -1,147 +1,145 @@
-from dataclasses import dataclass, asdict
-from typing import Awaitable, Callable, Dict, List, Optional
+from enum import Enum
+from typing import Awaitable, Callable, Dict, List, Optional, Any
+from pydantic import BaseModel, Field
 
 from aiogram_tonconnect.utils.address import Address
 
 
-@dataclass
-class Base:
-    """
-    Base data class providing a method to convert the instance to a dictionary.
-    """
-
-    def to_dict(self) -> Dict:
-        """
-        Convert the instance to a dictionary.
-
-        :return: Dictionary representation of the instance.
-        """
-        return asdict(self)
-
-    @classmethod
-    def from_dict(cls, data: Dict) -> "Base":
-        """
-        Create an instance of the Base class from a dictionary.
-
-        :param data: A dictionary containing data to initialize the instance.
-        :return: An instance of the class.
-        """
-        data = {k: v for k, v in data.items() if k in cls.__annotations__}
-        return cls(**data)  # noqa
-
-
-@dataclass
-class AppWallet(Base):
+class AppWallet(BaseModel):
     """
     Data class representing a AiogramTonConnect application wallet.
 
-    :param app_name: Name of the application.
-    :param name: Name of the wallet.
-    :param image: URL of the wallet image.
-    :param bridge: List of dictionaries representing the bridge.
-    :param bridge_url: Optional URL of the bridge.
-    :param platforms: Optional list of supported platforms.
-    :param tondns: Optional TON DNS information.
-    :param about_url: Optional URL providing information about the wallet.
-    :param universal_url: Optional universal URL associated with the wallet.
+    - app_name: Name of the application.
+    - name: Name of the wallet.
+    - image: URL of the wallet image.
+    - bridge: List of dictionaries representing the bridge.
+    - bridge_url: Optional URL of the bridge.
+    - platforms: Optional list of supported platforms.
+    - tondns: Optional TON DNS information.
+    - about_url: Optional URL providing information about the wallet.
+    - universal_url: Optional universal URL associated with the wallet.
     """
 
     app_name: str
     name: str
     image: str
     bridge: List[Dict]
-    bridge_url: Optional[str] = None
-    platforms: List[str] = None
-    tondns: Optional[str] = None
-    about_url: Optional[str] = None
-    universal_url: Optional[str] = None
+    bridge_url: Optional[str] = Field(default=None)
+    platforms: List[str] = Field(default=None)
+    tondns: Optional[str] = Field(default=None)
+    about_url: Optional[str] = Field(default=None)
+    universal_url: Optional[str] = Field(default=None)
 
 
-@dataclass
-class AccountWallet(Base):
+class AccountWallet(BaseModel):
     """
     Data class representing a AiogramTonConnect account wallet.
 
-    :param address: Optional wallet address.
-    :param state_init: Optional wallet state initialization.
-    :param public_key: Optional public key associated with the wallet.
-    :param chain: Optional chain information.
+    - address: Optional wallet address.
+    - state_init: Optional wallet state initialization.
+    - public_key: Optional public key associated with the wallet.
+    - chain: Optional chain information.
     """
 
-    address: Optional[Address] = None
-    state_init: Optional[str] = None
-    public_key: Optional[str] = None
-    chain: Optional[int] = None
+    address: Optional[Address] = Field(default=None)
+    state_init: Optional[str] = Field(default=None)
+    public_key: Optional[str] = Field(default=None)
+    chain: Optional[int] = Field(default=None)
 
 
-@dataclass
-class ATCUser(Base):
+class ATCUser(BaseModel):
     """
     Data class representing a AiogramTonConnect user.
 
-    :param id: User ID.
-    :param language_code: Language code associated with the user.
-    :param app_wallet: Optional AiogramTonConnect application wallet.
-    :param account_wallet: Optional AiogramTonConnect account wallet.
-    :param last_transaction_boc: Optional BOC of the last transaction.
+    - id: User ID.
+    - language_code: Language code associated with the user.
+    - app_wallet: Optional AiogramTonConnect application wallet.
+    - account_wallet: Optional AiogramTonConnect account wallet.
+    - last_transaction_boc: Optional BOC of the last transaction.
     """
 
     id: int
     language_code: str
-    app_wallet: Optional[AppWallet] = None
-    account_wallet: Optional[AccountWallet] = None
-    last_transaction_boc: Optional[str] = None
+    app_wallet: Optional[AppWallet] = Field(default=None)
+    account_wallet: Optional[AccountWallet] = Field(default=None)
+    last_transaction_boc: Optional[str] = Field(default=None)
 
 
-@dataclass
-class TransactionMessage(Base):
+class TransactionMessage(BaseModel):
     """
     Data class representing a AiogramTonConnect transaction message.
 
-    :param address: Wallet address associated with the message.
-    :param payload: Payload of the message.
-    :param amount: Amount associated with the message.
+    - address: Receiver's address.
+    - amount: Amount to send in nanoTon.
+    - stateInit (string base64, optional): raw once-cell BoC encoded in Base64.
+    - payload (string base64, optional): raw one-cell BoC encoded in Base64.
+
+    Example:
+        A payload for a TON transfer with commentary:
+        payload = urlsafe_b64encode(
+            begin_cell()
+            .store_uint(0, 32)
+            .store_string(comment)
+            .end_cell()
+            .to_boc()
+        ).decode()
     """
 
     address: str
-    payload: str
     amount: str
-    stateInit: Optional[str] = ''
+    stateInit: Optional[str] = Field(default="")
+    payload: Optional[str] = Field(default="")
 
 
-@dataclass
-class Transaction(Base):
+class CHAIN(Enum):
+    MAINNET = "-239"
+    TESTNET = "-3"
+
+
+class Transaction(BaseModel):
     """
     Data class representing a AiogramTonConnect transaction.
 
-    :param valid_until: Validity duration of the transaction.
-    :param messages: List of transaction messages.
+    - valid_until: Validity duration of the transaction.
+    - network: The network (mainnet or testnet) where DApp intends to send the transaction.
+    If not set, the transaction is sent to the network currently set in the wallet,
+    but this is not safe and DApp should always strive to set the network.
+    If the network parameter is set, but the wallet has a different network set,
+    the wallet should show an alert and DO NOT ALLOW TO SEND this transaction.
+    - from_: The sender address in '<wc>:<hex>' format from which DApp intends to send the transaction.
+    Current account. address by default.
+    - messages: List of transaction messages: min is 1, max is 4.
     """
 
     valid_until: int
+    network: Optional[CHAIN] = Field(default="")
+    from_: Optional[str] = Field(default="", alias="from")
     messages: List[TransactionMessage]
 
+    def model_dump(self, **kwargs) -> dict[str, Any]:
+        data = super().model_dump(**kwargs)
+        data["from"] = data.pop("from_")
+        return data
 
-@dataclass
-class ConnectWalletCallbacks(Base):
+
+class ConnectWalletCallbacks(BaseModel):
     """
     Data class representing callbacks for connecting a wallet.
 
-    :param before_callback: Callable function to be executed before connecting the wallet.
-    :param after_callback: Callable function to be executed after connecting the wallet.
+    - before_callback: Callable function to be executed before connecting the wallet.
+    - after_callback: Callable function to be executed after connecting the wallet.
     """
 
     before_callback: Callable[..., Awaitable]
     after_callback: Callable[..., Awaitable]
 
 
-@dataclass
-class SendTransactionCallbacks(Base):
+class SendTransactionCallbacks(BaseModel):
     """
     Data class representing callbacks for sending a transaction.
 
-    :param before_callback: Callable function to be executed before sending the transaction.
-    :param after_callback: Callable function to be executed after sending the transaction.
+    - before_callback: Callable function to be executed before sending the transaction.
+    - after_callback: Callable function to be executed after sending the transaction.
     """
 
     before_callback: Callable[..., Awaitable]

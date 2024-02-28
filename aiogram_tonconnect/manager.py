@@ -141,11 +141,11 @@ class ATCManager:
         state_data = await self.state.get_data()
         wallets = await self.tonconnect.get_wallets()
 
-        app_wallet_dict = state_data.get("app_wallet") or wallets[0].to_dict()
-        app_wallet = AppWallet.from_dict(app_wallet_dict)
+        app_wallet_dict = state_data.get("app_wallet") or wallets[0].model_dump()
+        app_wallet = AppWallet(**app_wallet_dict)
 
-        universal_url = await self.tonconnect.connect(app_wallet.to_dict())
-        await self.state.update_data(app_wallet=app_wallet.to_dict())
+        universal_url = await self.tonconnect.connect(app_wallet.model_dump())
+        await self.state.update_data(app_wallet=app_wallet.model_dump())
 
         task = asyncio.create_task(self.__wait_connect_wallet_task())
         self.task_storage.add(task)
@@ -214,7 +214,7 @@ class ATCManager:
         :param transaction: The transaction details.
         """
         if transaction:
-            await self.state.update_data(transaction=transaction.to_dict())
+            await self.state.update_data(transaction=transaction.model_dump())
 
         if callbacks:
             await self.send_transaction_callbacks_storage.add(callbacks)
@@ -381,9 +381,9 @@ class ATCManager:
                 await asyncio.sleep(.5)
                 if self.tonconnect.connected:
                     state_data = await self.state.get_data()
-                    app_wallet = AppWallet.from_dict(state_data.get("app_wallet"))
+                    app_wallet = AppWallet(**state_data.get("app_wallet"))
                     account_wallet = AccountWallet(
-                        address=Address(self.tonconnect.account.address),
+                        address=Address(hex_address=self.tonconnect.account.address),
                         state_init=self.tonconnect.account.wallet_state_init,
                         public_key=self.tonconnect.account.public_key,
                         chain=self.tonconnect.account.chain,
@@ -391,7 +391,7 @@ class ATCManager:
 
                     self.middleware_data["account_wallet"] = account_wallet
                     self.middleware_data["app_wallet"] = app_wallet
-                    await self.state.update_data(account_wallet=account_wallet.to_dict())
+                    await self.state.update_data(account_wallet=account_wallet.model_dump())
 
                     callbacks = await self.connect_wallet_callbacks_storage.get()
                     await callbacks.after_callback(**self.middleware_data)

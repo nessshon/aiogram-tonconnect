@@ -32,7 +32,7 @@ class AiogramTonConnectHandlers:
             wallets = await atc_manager.tonconnect.get_wallets()
             app_wallet_name = call.data.split(":")[1]
             app_wallet = next((w for w in wallets if w.app_name == app_wallet_name), wallets[0])
-            await atc_manager.state.update_data(app_wallet=app_wallet.to_dict())
+            await atc_manager.state.update_data(app_wallet=app_wallet.model_dump())
             await atc_manager.connect_wallet()
 
         elif call.data == "back":

@@ -72,7 +72,7 @@ class ConnectWalletCallbackStorage(CallbackStorageBase):
 
     async def add(self, connect_wallet_callbacks: ConnectWalletCallbacks) -> None:
         async with self.redis.client() as client:
-            serialized_value = pickle.dumps(connect_wallet_callbacks.to_dict())
+            serialized_value = pickle.dumps(connect_wallet_callbacks.model_dump())
             await client.hset(self.collection, key=str(self.user_id), value=serialized_value)  # noqa
 
     async def remove(self) -> None:
@@ -99,7 +99,7 @@ class SendTransactionCallbackStorage(CallbackStorageBase):
 
     async def add(self, callbacks: SendTransactionCallbacks) -> None:
         async with self.redis.client() as client:
-            serialized_value = pickle.dumps(callbacks.to_dict())
+            serialized_value = pickle.dumps(callbacks.model_dump())
             await client.hset(self.collection, key=str(self.user_id), value=serialized_value)  # noqa
 
     async def remove(self) -> None:
