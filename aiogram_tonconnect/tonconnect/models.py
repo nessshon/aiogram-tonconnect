@@ -91,7 +91,7 @@ class TransactionMessage(BaseModel):
     payload: Optional[str] = Field(default="")
 
 
-class CHAIN(Enum):
+class CHAIN(str, Enum):
     MAINNET = "-239"
     TESTNET = "-3"
 
@@ -112,7 +112,7 @@ class Transaction(BaseModel):
     """
 
     valid_until: int
-    network: Optional[CHAIN] = Field(default="")
+    network: Optional[CHAIN] = Field(default=CHAIN.MAINNET.value)
     from_: Optional[str] = Field(default="", alias="from")
     messages: List[TransactionMessage]
 
