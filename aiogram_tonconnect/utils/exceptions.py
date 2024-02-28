@@ -4,9 +4,15 @@ class AiogramTonconnectException(Exception):
     """
 
 
-class LastTransactionNotFound(AiogramTonconnectException):
+class RetrySendTransactionError(AiogramTonconnectException):
     """
-    Exception raised when the last transaction is not found.
+    Exception raised when there is a need to retry sending a transaction.
+    """
+
+
+class RetryConnectWalletError(AiogramTonconnectException):
+    """
+    Exception raised when there is a need to retry connecting to a wallet.
     """
 
 
