@@ -39,7 +39,7 @@ async def select_language_window(event_from_user: User, atc_manager: ATCManager,
     ])
 
     # Sending the message and updating user state
-    await atc_manager.send_message(text, reply_markup=reply_markup)
+    await atc_manager._send_message(text, reply_markup=reply_markup)
     await atc_manager.state.set_state(UserState.select_language)
 
 
@@ -70,5 +70,5 @@ async def main_menu_window(atc_manager: ATCManager, app_wallet: AppWallet,
     ])
 
     # Sending the message and updating user state
-    await atc_manager.send_message(text, reply_markup=reply_markup)
+    await atc_manager._send_message(text, reply_markup=reply_markup)
     await atc_manager.state.set_state(UserState.main_menu)

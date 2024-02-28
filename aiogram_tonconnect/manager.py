@@ -130,7 +130,7 @@ class ATCManager:
         :param button_wallet_width: The width of the wallet buttons in the inline keyboard.
         """
         if self.__qrcode_type == "bytes":
-            await self.send_message(self.__emoji)
+            await self._send_message(self.__emoji)
 
         if self.tonconnect.connected:
             await self.disconnect_wallet()
@@ -189,7 +189,7 @@ class ATCManager:
             qrcode_url = QRCode.create_connect_wallet_url(
                 universal_url, self.__qrcode_base_url, app_wallet.image
             )
-            await self.send_message(
+            await self._send_message(
                 text=hide_link(qrcode_url) + text,
                 reply_markup=reply_markup,
             )
@@ -234,7 +234,7 @@ class ATCManager:
             self.user.app_wallet.name, universal_url,
         )
 
-        await self.send_message(text=text, reply_markup=reply_markup)
+        await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.send_transaction)
 
     async def _connect_wallet_timeout(self) -> None:
@@ -244,7 +244,7 @@ class ATCManager:
         text = self.__text_message.get("connect_wallet_timeout")
         reply_markup = self.__inline_keyboard.send_transaction_timeout()
 
-        await self.send_message(text=text, reply_markup=reply_markup)
+        await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.connect_wallet_timeout)
 
     async def _send_transaction_timeout(self) -> None:
@@ -254,7 +254,7 @@ class ATCManager:
         text = self.__text_message.get("send_transaction_timeout")
         reply_markup = self.__inline_keyboard.send_transaction_timeout()
 
-        await self.send_message(text=text, reply_markup=reply_markup)
+        await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.send_transaction_timeout)
 
     async def _send_transaction_rejected(self) -> None:
@@ -264,7 +264,7 @@ class ATCManager:
         text = self.__text_message.get("send_transaction_rejected")
         reply_markup = self.__inline_keyboard.send_transaction_rejected()
 
-        await self.send_message(text=text, reply_markup=reply_markup)
+        await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.send_transaction_rejected)
 
     async def _send_photo(
@@ -292,7 +292,7 @@ class ATCManager:
         await self.state.update_data(message_id=message.message_id)
         return message
 
-    async def send_message(
+    async def _send_message(
             self,
             text: str,
             reply_markup: Optional[InlineKeyboardMarkup] = None,

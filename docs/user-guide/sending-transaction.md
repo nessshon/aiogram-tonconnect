@@ -74,7 +74,7 @@ async def send_amount_ton_window(atc_manager: ATCManager, **_) -> None:
     ])
 
     # Send the message and update user state
-    await atc_manager.send_message(text, reply_markup=reply_markup)
+    await atc_manager._send_message(text, reply_markup=reply_markup)
     await atc_manager.state.set_state(UserState.send_amount_ton)
 ```
 
@@ -107,7 +107,7 @@ async def transaction_info_windows(atc_manager: ATCManager, boc: str, **_) -> No
     ])
 
     # Send the message and update user state
-    await atc_manager.send_message(text, reply_markup=reply_markup)
+    await atc_manager._send_message(text, reply_markup=reply_markup)
     await atc_manager.state.set_state(UserState.transaction_info)
 ```
 
