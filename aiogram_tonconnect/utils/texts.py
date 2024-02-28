@@ -55,6 +55,16 @@ class TextMessage(TextMessageBase):
 
         return {
             "ru": {
+                # When the bot response time exceeds 2-3 seconds, such as during QR code generation,
+                # utilize 'loader_text' as a placeholder.
+                "loader_text": (
+                    "💎"
+                ),
+                # If a message is older than 2 days, the Telegram Bot API does not support direct deletion.
+                # Instead, we modify the message text as 'outdated_text'.
+                "outdated_text": (
+                    "..."
+                ),
                 "connect_wallet": (
                     f"<a href='{get_a_wallet_link}'>Установить кошелек</a>\n\n"
                     "<b>Подключите свой {wallet_name}!</b>\n\n"
@@ -82,6 +92,16 @@ class TextMessage(TextMessageBase):
                 ),
             },
             "en": {
+                # When the bot response time exceeds 2-3 seconds, such as during QR code generation,
+                # utilize 'loader_text' as a placeholder.
+                "loader_text": (
+                    "💎"
+                ),
+                # If a message is older than 2 days, the Telegram Bot API does not support direct deletion.
+                # Instead, we modify the message text as 'outdated_text'.
+                "outdated_text": (
+                    "..."
+                ),
                 "connect_wallet": (
                     f"<a href='{get_a_wallet_link}'>Get a Wallet</a>\n\n"
                     "<b>Connect your {wallet_name}!</b>\n\n"

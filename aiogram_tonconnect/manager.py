@@ -60,7 +60,6 @@ class ATCManager:
     :param text_message: TextMessageBase class for managing text messages.
     :param inline_keyboard: InlineKeyboardBase class for managing inline keyboards.
     :param data: Additional data.
-    :param emoji: Emoji string. Defaults to "💎".
     """
 
     def __init__(
@@ -73,12 +72,12 @@ class ATCManager:
             text_message: TextMessageBase,
             inline_keyboard: InlineKeyboardBase,
             data: Dict[str, Any],
-            emoji: str = "💎",
     ) -> None:
         self.user: ATCUser = user
         self.redis: Redis = redis
         self.tonconnect: AiogramTonConnect = tonconnect
 
+        self.__data: Dict[str, Any] = data
         self.__qrcode_type: str = qrcode_type
         self.__qrcode_base_url: str = qrcode_base_url
         self.__text_message: TextMessageBase = text_message
@@ -86,9 +85,6 @@ class ATCManager:
 
         self.bot: Bot = data.get("bot")
         self.state: FSMContext = data.get("state")
-
-        self.__data: Dict[str, Any] = data
-        self.__emoji: str = emoji
 
         self.task_storage = TaskStorage(user.id)
         self.connect_wallet_callbacks_storage = ConnectWalletCallbackStorage(redis, user.id)
@@ -131,7 +127,8 @@ class ATCManager:
         :param callbacks: Callbacks to execute.
         """
         if self.__qrcode_type == "bytes":
-            await self._send_message(self.__emoji)
+            text = self.__text_message.get("loader_text")
+            await self._send_message(text)
 
         if self.tonconnect.connected:
             await self.disconnect_wallet()
@@ -386,10 +383,11 @@ class ATCManager:
         except TelegramBadRequest as ex:
             if any(e in ex.message for e in MESSAGE_DELETE_ERRORS):
                 try:
+                    text = self.__text_message.get("outdated_text")
                     return await self.bot.edit_message_text(
                         message_id=message_id,
                         chat_id=self.user.id,
-                        text=self.__emoji,
+                        text=text,
                     )
                 except TelegramBadRequest as ex:
                     if not any(e in ex.message for e in MESSAGE_EDIT_ERRORS):
