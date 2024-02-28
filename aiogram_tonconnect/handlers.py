@@ -42,6 +42,25 @@ class AiogramTonConnectHandlers:
         await call.answer()
 
     @staticmethod
+    async def connect_wallet_proof_wrong_callback_query_handler(
+            call: CallbackQuery,
+            atc_manager: ATCManager,
+    ) -> None:
+        """
+        Handle callback queries related to wrong proof during wallet connection.
+
+        :param call: The CallbackQuery instance.
+        :param atc_manager: An instance of ATCManager.
+        """
+        if call.data == "retry":
+            await atc_manager.retry_connect_wallet()
+        elif call.data == "back":
+            callbacks = await atc_manager.connect_wallet_callbacks_storage.get()
+            await callbacks.before_callback(**atc_manager.middleware_data)
+
+        await call.answer()
+
+    @staticmethod
     async def connect_wallet_timeout_callback_query_handler(
             call: CallbackQuery,
             atc_manager: ATCManager,
@@ -132,6 +151,10 @@ class AiogramTonConnectHandlers:
         router.callback_query.register(
             self.connect_wallet_callback_query_handler,
             TcState.connect_wallet,
+        )
+        router.callback_query.register(
+            self.connect_wallet_proof_wrong_callback_query_handler,
+            TcState.connect_wallet_proof_wrong,
         )
         router.callback_query.register(
             self.connect_wallet_timeout_callback_query_handler,

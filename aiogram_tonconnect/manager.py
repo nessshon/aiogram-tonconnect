@@ -28,11 +28,12 @@ from .tonconnect.storage import (
 )
 from .tonconnect.models import (
     AccountWallet,
+    ATCUser,
     AppWallet,
     ConnectWalletCallbacks,
     SendTransactionCallbacks,
     Transaction,
-    ATCUser,
+    InfoWallet,
 )
 from .utils.address import Address
 from .utils.exceptions import (
@@ -43,6 +44,7 @@ from .utils.exceptions import (
     MESSAGE_EDIT_ERRORS,
 )
 from .utils.keyboards import InlineKeyboardBase
+from .utils.proof import generate_payload, check_payload
 from .utils.qrcode import QRCode
 from .utils.states import TcState
 from .utils.texts import TextMessageBase
@@ -120,11 +122,13 @@ class ATCManager:
     async def connect_wallet(
             self,
             callbacks: ConnectWalletCallbacks,
+            check_proof: Optional[bool] = False,
     ) -> None:
         """
         Open the connect wallet window.
 
         :param callbacks: Callbacks to execute.
+        :param check_proof: True to check ton_proof False ton_addr.
         """
         if self.__qrcode_type == "bytes":
             text = self.__text_message.get("loader_text")
@@ -141,8 +145,19 @@ class ATCManager:
         app_wallet_dict = state_data.get("app_wallet") or wallets[0].model_dump()
         app_wallet = AppWallet(**app_wallet_dict)
 
-        universal_url = await self.tonconnect.connect(app_wallet.model_dump())
-        await self.state.update_data(app_wallet=app_wallet.model_dump())
+        if check_proof:
+            proof_payload = generate_payload()
+            ton_proof = {"ton_proof": proof_payload}
+            universal_url = await self.tonconnect.connect(app_wallet.model_dump(), ton_proof)
+        else:
+            proof_payload = None
+            universal_url = await self.tonconnect.connect(app_wallet.model_dump())
+
+        await self.state.update_data(
+            app_wallet=app_wallet.model_dump(),
+            proof_payload=proof_payload,
+            check_proof=check_proof,
+        )
 
         task = asyncio.create_task(self.__wait_connect_wallet_task())
         self.task_storage.add(task)
@@ -161,6 +176,8 @@ class ATCManager:
         """
         Retry open the connect wallet window.
         """
+        state_data = await self.state.get_data()
+        check_proof = state_data.get("check_proof", False)
         callbacks = await self.connect_wallet_callbacks_storage.get()
 
         if callbacks is None:
@@ -169,7 +186,7 @@ class ATCManager:
                 "You need a connect wallet first."
             )
 
-        await self.connect_wallet(callbacks)
+        await self.connect_wallet(callbacks, check_proof)
 
     async def _send_connect_wallet_window(
             self,
@@ -264,6 +281,16 @@ class ATCManager:
             )
 
         await self.send_transaction(transaction, callbacks)
+
+    async def _connect_wallet_proof_wrong(self) -> None:
+        """
+        Handle the connect wallet proof wrong.
+        """
+        text = self.__text_message.get("connect_wallet_proof_wrong")
+        reply_markup = self.__inline_keyboard.connect_wallet_proof_wrong()
+
+        await self._send_message(text=text, reply_markup=reply_markup)
+        await self.state.set_state(TcState.connect_wallet_proof_wrong)
 
     async def _connect_wallet_timeout(self) -> None:
         """
@@ -410,17 +437,30 @@ class ATCManager:
                 await asyncio.sleep(.5)
                 if self.tonconnect.connected:
                     state_data = await self.state.get_data()
-                    app_wallet = AppWallet(**state_data.get("app_wallet"))
+
                     account_wallet = AccountWallet(
                         address=Address(hex_address=self.tonconnect.account.address),
                         state_init=self.tonconnect.account.wallet_state_init,
                         public_key=self.tonconnect.account.public_key,
                         chain=self.tonconnect.account.chain,
                     )
+                    info_wallet = InfoWallet.from_pytonconnect_wallet(self.tonconnect.wallet)
+                    app_wallet = AppWallet(**state_data.get("app_wallet"))
+
+                    await self.state.update_data(
+                        account_wallet=account_wallet.model_dump(),
+                        info_wallet=info_wallet.model_dump(),
+                    )
+
+                    if state_data.get("check_proof", False):
+                        proof_payload = state_data.get("proof_payload")
+                        if not check_payload(proof_payload, info_wallet):
+                            await self._connect_wallet_proof_wrong()
+                            break
 
                     self.middleware_data["account_wallet"] = account_wallet
+                    self.middleware_data["info_wallet"] = info_wallet
                     self.middleware_data["app_wallet"] = app_wallet
-                    await self.state.update_data(account_wallet=account_wallet.model_dump())
 
                     callbacks = await self.connect_wallet_callbacks_storage.get()
                     await callbacks.after_callback(**self.middleware_data)

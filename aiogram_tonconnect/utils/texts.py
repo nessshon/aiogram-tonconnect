@@ -70,6 +70,11 @@ class TextMessage(TextMessageBase):
                     "<b>Подключите свой {wallet_name}!</b>\n\n"
                     "Отсканируйте с помощью мобильного кошелька:"
                 ),
+                "connect_wallet_proof_wrong": (
+                    f"{hide_link(ton_connect_banner_link)}"
+                    "<b>Предупреждение</b>\n\n"
+                    "Подпись кошелька поддельна или истекло время ожидания подключения."
+                ),
                 "connect_wallet_timeout": (
                     f"{hide_link(ton_connect_banner_link)}"
                     "<b>Предупреждение</b>\n\n"
@@ -106,6 +111,11 @@ class TextMessage(TextMessageBase):
                     f"<a href='{get_a_wallet_link}'>Get a Wallet</a>\n\n"
                     "<b>Connect your {wallet_name}!</b>\n\n"
                     "Scan with your mobile app wallet:"
+                ),
+                "connect_wallet_proof_wrong": (
+                    f"{hide_link(ton_connect_banner_link)}"
+                    "<b>Warning</b>\n\n"
+                    "The wallet signature is wrong or the connection timeout has expired."
                 ),
                 "connect_wallet_timeout": (
                     f"{hide_link(ton_connect_banner_link)}"

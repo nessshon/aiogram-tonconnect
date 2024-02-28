@@ -7,7 +7,7 @@ from redis.asyncio import Redis
 from .manager import ATCManager
 from .tonconnect import AiogramTonConnect
 from .tonconnect.storage import SessionStorage
-from .tonconnect.models import ATCUser, AppWallet, AccountWallet
+from .tonconnect.models import ATCUser, AppWallet, AccountWallet, InfoWallet
 from .utils.keyboards import InlineKeyboardBase, InlineKeyboard
 from .utils.texts import TextMessageBase, TextMessage
 
@@ -74,6 +74,10 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
         account_wallet = AccountWallet(**account_wallet) if account_wallet else None
         data["account_wallet"] = account_wallet
 
+        info_wallet = state_data.get("info_wallet")
+        info_wallet = InfoWallet(**info_wallet) if info_wallet else None
+        data["info_wallet"] = info_wallet
+
         app_wallet = state_data.get("app_wallet")
         app_wallet = AppWallet(**app_wallet) if app_wallet else None
         data["app_wallet"] = app_wallet
@@ -87,6 +91,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
             id=user.id,
             language_code=language_code,
             last_transaction_boc=last_transaction_boc,
+            info_wallet=info_wallet,
             app_wallet=app_wallet,
             account_wallet=account_wallet,
         )

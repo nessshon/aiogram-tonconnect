@@ -58,6 +58,15 @@ class InlineKeyboardBase(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
+    def connect_wallet_proof_wrong(self) -> Markup:
+        """
+        Create an inline keyboard for proof of wrong connection.
+
+        :return: Inline keyboard markup.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     def send_transaction(self, wallet_name: str, url: str) -> Markup:
         """
         Create an inline keyboard for sending a transaction.
@@ -146,6 +155,13 @@ class InlineKeyboard(InlineKeyboardBase):
         builder.row(*generated_buttons, width=width)
         builder.row(self._get_button("back"))
         return builder.as_markup()
+
+    def connect_wallet_proof_wrong(self) -> Markup:
+        inline_keyboard = [
+            [self._get_button("back"),
+             self._get_button("retry")],
+        ]
+        return Markup(inline_keyboard=inline_keyboard)
 
     def send_transaction(self, wallet_name: str, url: str) -> Markup:
         inline_keyboard = [

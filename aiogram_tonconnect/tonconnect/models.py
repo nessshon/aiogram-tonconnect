@@ -1,6 +1,8 @@
-from enum import Enum
-from typing import Awaitable, Callable, Dict, List, Optional, Any
+from enum import IntEnum
+from typing import Awaitable, Callable, Dict, List, Optional, Any, Union
+
 from pydantic import BaseModel, Field
+from pytonconnect.parsers import WalletInfo
 
 from aiogram_tonconnect.utils.address import Address
 
@@ -47,6 +49,81 @@ class AccountWallet(BaseModel):
     chain: Optional[int] = Field(default=None)
 
 
+class DeviceInfo(BaseModel):
+    """
+    Data class representing a device information.
+
+    - platform: Device platform (e.g. "iphone" | "ipad" | "android").
+    - app_name: Application name (e.g. "Tonkeeper").
+    - app_version: Application version (e.g. "2.3.367").
+    - max_protocol_version: Maximum protocol version supported by the device.
+    - features: List of device features.
+    """
+    platform: str
+    app_name: str
+    app_version: str
+    max_protocol_version: int
+    features: List[Union[dict, str]]
+
+
+class TonProof(BaseModel):
+    """
+    Data class representing a TON Proof.
+
+    - timestamp: Timestamp of the proof.
+    - domain_len: Length of the domain.
+    - domain_val: Domain value.
+    - payload: Payload of the proof.
+    - signature: Signature of the proof.
+    """
+    timestamp: int
+    domain_len: int
+    domain_val: str
+    payload: str
+    signature: str
+
+
+class InfoWallet(BaseModel):
+    """
+    Data class representing information about user's wallet.
+
+    - device: Information about user's wallet's device.
+    - provider: Provider type.
+    - account: Selected account.
+    - ton_proof: Response for ton_proof item request.
+    """
+    device: Optional[DeviceInfo] = Field(default=None)
+    provider: Optional[str] = Field(default="http")
+    account: Optional[AccountWallet] = Field(default=None)
+    ton_proof: Optional[TonProof] = Field(default=None)
+
+    @staticmethod
+    def from_pytonconnect_wallet(wallet: WalletInfo) -> 'InfoWallet':
+        return InfoWallet(
+            device=DeviceInfo(
+                platform=wallet.device.platform,
+                app_name=wallet.device.app_name,
+                app_version=wallet.device.app_version,
+                max_protocol_version=wallet.device.max_protocol_version,
+                features=wallet.device.features,
+            ) if wallet.device else None,
+            provider=wallet.provider,
+            account=AccountWallet(
+                address=Address(hex_address=wallet.account.address),
+                state_init=wallet.account.wallet_state_init,
+                public_key=wallet.account.public_key,
+                chain=wallet.account.chain,
+            ) if wallet.account else None,
+            ton_proof=TonProof(
+                timestamp=wallet.ton_proof.timestamp,
+                domain_len=wallet.ton_proof.domain_len,
+                domain_val=wallet.ton_proof.domain_val,
+                payload=wallet.ton_proof.payload,
+                signature=wallet.ton_proof.signature.hex(),
+            ) if wallet.ton_proof else None,
+        )
+
+
 class ATCUser(BaseModel):
     """
     Data class representing a AiogramTonConnect user.
@@ -61,6 +138,7 @@ class ATCUser(BaseModel):
     id: int
     language_code: str
     app_wallet: Optional[AppWallet] = Field(default=None)
+    info_wallet: Optional[InfoWallet] = Field(default=None)
     account_wallet: Optional[AccountWallet] = Field(default=None)
     last_transaction_boc: Optional[str] = Field(default=None)
 
@@ -91,7 +169,7 @@ class TransactionMessage(BaseModel):
     payload: Optional[str] = Field(default="")
 
 
-class CHAIN(str, Enum):
+class CHAIN(IntEnum):
     MAINNET = "-239"
     TESTNET = "-3"
 
