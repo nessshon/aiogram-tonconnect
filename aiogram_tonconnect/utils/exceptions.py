@@ -4,6 +4,12 @@ class AiogramTonconnectException(Exception):
     """
 
 
+class LastTransactionNotFound(AiogramTonconnectException):
+    """
+    Exception raised when the last transaction is not found.
+    """
+
+
 class LanguageCodeNotSupported(AiogramTonconnectException):
     """
     Exception raised when an unsupported language code is encountered.

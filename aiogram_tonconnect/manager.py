@@ -37,6 +37,7 @@ from .tonconnect.models import (
 from .utils.address import Address
 from .utils.exceptions import (
     LanguageCodeNotSupported,
+    LastTransactionNotFound,
     MESSAGE_DELETE_ERRORS,
     MESSAGE_EDIT_ERRORS,
 )
@@ -204,8 +205,8 @@ class ATCManager:
 
     async def send_transaction(
             self,
-            callbacks: Optional[SendTransactionCallbacks] = None,
-            transaction: Optional[Transaction] = None,
+            transaction: Transaction,
+            callbacks: SendTransactionCallbacks,
     ) -> None:
         """
         Open the send transaction window.
@@ -213,11 +214,8 @@ class ATCManager:
         :param callbacks: Callbacks to execute.
         :param transaction: The transaction details.
         """
-        if transaction:
-            await self.state.update_data(transaction=transaction.model_dump())
-
-        if callbacks:
-            await self.send_transaction_callbacks_storage.add(callbacks)
+        await self.state.update_data(transaction=transaction.model_dump())
+        await self.send_transaction_callbacks_storage.add(callbacks)
 
         task = asyncio.create_task(self.__wait_send_transaction_task())
         self.task_storage.add(task)
@@ -236,6 +234,20 @@ class ATCManager:
 
         await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.send_transaction)
+
+    async def retry_last_send_transaction(self) -> None:
+        data = await self.state.get_data()
+
+        try:
+            transaction = Transaction(**data.get("transaction"))
+            callbacks = await self.send_transaction_callbacks_storage.get()
+        except KeyError:
+            raise LastTransactionNotFound(
+                "Last transaction not found. "
+                "You need to send a transaction first."
+            )
+
+        await self.send_transaction(transaction, callbacks)
 
     async def _connect_wallet_timeout(self) -> None:
         """

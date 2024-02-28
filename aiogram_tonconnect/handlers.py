@@ -92,7 +92,7 @@ class AiogramTonConnectHandlers:
         :param atc_manager: An instance of ATCManager.
         """
         if call.data == "retry":
-            await atc_manager.send_transaction()
+            await atc_manager.retry_last_send_transaction()
         elif call.data == "back":
             callbacks = await atc_manager.send_transaction_callbacks_storage.get()
             atc_manager.middleware_data["account_wallet"] = atc_manager.user.account_wallet
@@ -112,7 +112,7 @@ class AiogramTonConnectHandlers:
         :param atc_manager: An instance of ATCManager.
         """
         if call.data == "retry":
-            await atc_manager.send_transaction()
+            await atc_manager.retry_last_send_transaction()
         elif call.data == "back":
             callbacks = await atc_manager.send_transaction_callbacks_storage.get()
             atc_manager.middleware_data["account_wallet"] = atc_manager.user.account_wallet
