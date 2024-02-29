@@ -123,12 +123,20 @@ class ATCManager:
             self,
             callbacks: ConnectWalletCallbacks,
             check_proof: Optional[bool] = False,
+            proof_payload: Optional[str] = None,
     ) -> None:
         """
         Open the connect wallet window.
 
         :param callbacks: Callbacks to execute.
-        :param check_proof: True to check ton_proof False ton_addr.
+        :param check_proof: Set to True to check ton_proof; False to use ton_addr.
+        :param proof_payload: Payload for ton_proof.
+
+        If check_proof is True and proof_payload is not specified, it will be generated automatically.
+        If check_proof is True and proof_payload is specified, the provided proof_payload will be used.
+        If check_proof is not specified, connection without proof (ton_addr) will be used.
+        Link to the specification:
+            https://github.com/ton-blockchain/ton-connect/blob/main/requests-responses.md#initiating-connection
         """
         await self.disconnect_wallet()
 
@@ -145,7 +153,7 @@ class ATCManager:
         app_wallet = AppWallet(**app_wallet_dict)
 
         if check_proof:
-            proof_payload = generate_payload()
+            proof_payload = proof_payload or generate_payload()
             ton_proof = {"ton_proof": proof_payload}
             universal_url = await self.tonconnect.connect(app_wallet.model_dump(), ton_proof)
         else:
