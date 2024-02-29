@@ -28,7 +28,8 @@ class SessionStorage:
         await self.storage.set_item(self._get_key(key), value)
 
     async def get_item(self, key: str, default_value: str = None) -> str:
-        return await self.storage.get_item(self._get_key(key), default_value)
+        value = await self.storage.get_item(self._get_key(key), default_value)
+        return value.decode() if isinstance(value, bytes) else value
 
     async def remove_item(self, key: str) -> None:
         await self.storage.remove_item(self._get_key(key))
