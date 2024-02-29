@@ -3,12 +3,12 @@ from typing import Callable, Dict, Any, Awaitable, Optional, Type, List, Union
 from aiogram import BaseMiddleware
 from aiogram.fsm.context import FSMContext
 from aiogram.types import TelegramObject, User
-from redis.asyncio import Redis
 
 from .manager import ATCManager
 from .tonconnect import AiogramTonConnect
 from .tonconnect.storage import SessionStorage
 from .tonconnect.models import ATCUser, AppWallet, AccountWallet, InfoWallet
+from .tonconnect.storage.base import ATCStorageBase
 from .utils.keyboards import InlineKeyboardBase, InlineKeyboard
 from .utils.qrcode import QRImageProviderBase, QRUrlProviderBase, QRImageProvider
 from .utils.texts import TextMessageBase, TextMessage
@@ -18,7 +18,10 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
     """
     Aiogram middleware for AiogramTonConnect integration.
 
-    :param redis: Redis instance for storage.
+    :param storage: An instance of ATCStorageBase for data storage.
+        Available default classes:
+        - ATCMemoryStorage: Stores data in memory.
+        - ATCRedisStorage: Stores data in Redis.
     :param manifest_url: URL to the AiogramTonConnect manifest.
     :param redirect_url: URL to the redirect after connecting.
     :param exclude_wallets: List of wallet names to exclude.
@@ -33,7 +36,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
 
     def __init__(
             self,
-            redis: Redis,
+            storage: ATCStorageBase,
             manifest_url: str,
             redirect_url: str = None,
             exclude_wallets: List[str] = None,
@@ -41,7 +44,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
             inline_keyboard: Optional[Type[InlineKeyboardBase]] = None,
             qrcode_provider: Optional[Union[QRImageProviderBase, QRUrlProviderBase]] = None,
     ) -> None:
-        self.redis = redis
+        self.storage = storage
         self.manifest_url = manifest_url
         self.redirect_url = redirect_url
         self.exclude_wallets = exclude_wallets
@@ -95,13 +98,13 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
         data["atc_user"] = atc_user
 
         tonconnect = AiogramTonConnect(
-            storage=SessionStorage(self.redis, atc_user.id),
+            storage=SessionStorage(self.storage, atc_user.id),
             manifest_url=self.manifest_url,
             redirect_url=self.redirect_url,
             exclude_wallets=self.exclude_wallets
         )
         atc_manager = ATCManager(
-            redis=self.redis,
+            storage=self.storage,
             tonconnect=tonconnect,
             text_message=self.text_message(atc_user.language_code),
             inline_keyboard=self.inline_keyboard(atc_user.language_code),

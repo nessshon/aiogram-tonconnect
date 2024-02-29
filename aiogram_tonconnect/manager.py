@@ -13,7 +13,6 @@ from aiogram.types import (
     Message,
 )
 from aiogram.utils.markdown import hide_link
-from redis.asyncio import Redis
 
 from pytonconnect.exceptions import (
     UserRejectsError,
@@ -35,6 +34,7 @@ from .tonconnect.models import (
     Transaction,
     InfoWallet,
 )
+from .tonconnect.storage.base import ATCStorageBase
 from .utils.address import Address
 from .utils.exceptions import (
     LanguageCodeNotSupported,
@@ -58,7 +58,7 @@ class ATCManager:
     Manager class for AiogramTonConnect integration.
 
     :param user: The AiogramTonConnect user.
-    :param redis: Redis instance for storage.
+    :param storage: ATCStorageBase instance.
     :param tonconnect: AiogramTonConnect instance.
     :param text_message: TextMessageBase class for managing text messages.
     :param inline_keyboard: InlineKeyboardBase class for managing inline keyboards.
@@ -69,16 +69,16 @@ class ATCManager:
     def __init__(
             self,
             user: ATCUser,
-            redis: Redis,
+            storage: ATCStorageBase,
             tonconnect: AiogramTonConnect,
             text_message: TextMessageBase,
             inline_keyboard: InlineKeyboardBase,
             qrcode_provider: Union[QRImageProviderBase, QRUrlProviderBase],
             data: Dict[str, Any],
     ) -> None:
-        self.user: ATCUser = user
-        self.redis: Redis = redis
-        self.tonconnect: AiogramTonConnect = tonconnect
+        self.user = user
+        self.storage = storage
+        self.tonconnect = tonconnect
 
         self.__data: Dict[str, Any] = data
         self.__text_message = text_message
@@ -89,8 +89,8 @@ class ATCManager:
         self.state: FSMContext = data.get("state")
 
         self.task_storage = TaskStorage(user.id)
-        self.connect_wallet_callbacks_storage = ConnectWalletCallbackStorage(redis, user.id)
-        self.send_transaction_callbacks_storage = SendTransactionCallbackStorage(redis, user.id)
+        self.connect_wallet_callbacks_storage = ConnectWalletCallbackStorage(storage, user.id)
+        self.send_transaction_callbacks_storage = SendTransactionCallbackStorage(storage, user.id)
 
     @property
     def middleware_data(self) -> Dict[str, Any]:
@@ -130,12 +130,11 @@ class ATCManager:
         :param callbacks: Callbacks to execute.
         :param check_proof: True to check ton_proof False ton_addr.
         """
+        await self.disconnect_wallet()
+
         if isinstance(self.__qrcode_provider, QRImageProviderBase):
             text = self.__text_message.get("loader_text")
             await self._send_message(text)
-
-        if self.tonconnect.connected:
-            await self.disconnect_wallet()
 
         await self.connect_wallet_callbacks_storage.add(callbacks)
 

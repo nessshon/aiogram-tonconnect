@@ -1,24 +1,16 @@
 from asyncio import Task
 from typing import Dict
 
-# Dictionary to store user-specific tasks
 tasks: Dict[int, Task] = {}
 
 
 class TaskStorage:
     """
     Storage for managing user-specific asynchronous tasks.
-
-    This class provides methods to add, get, and remove tasks associated with a user ID.
     """
 
     def __init__(self, user_id: int) -> None:
-        """
-        Initialize the TaskStorage.
-
-        :param user_id: User ID associated with the task storage.
-        """
-        self.user_id: int = user_id
+        self.user_id = user_id
 
     def add(self, task: Task) -> None:
         """

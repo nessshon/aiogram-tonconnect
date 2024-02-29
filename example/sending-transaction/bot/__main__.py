@@ -4,6 +4,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram_tonconnect.handlers import AiogramTonConnectHandlers
 from aiogram_tonconnect.middleware import AiogramTonConnectMiddleware
+from aiogram_tonconnect.tonconnect.storage.base import ATCRedisStorage
 from aiogram_tonconnect.utils.qrcode import QRUrlProvider
 
 from .handlers import router
@@ -38,7 +39,7 @@ async def main():
     # Registering middleware for TON Connect processing
     dp.update.middleware.register(
         AiogramTonConnectMiddleware(
-            redis=storage.redis,
+            storage=ATCRedisStorage(storage.redis),
             manifest_url=MANIFEST_URL,
             exclude_wallets=EXCLUDE_WALLETS,
             qrcode_provider=QRUrlProvider(),
