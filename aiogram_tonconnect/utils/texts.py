@@ -58,7 +58,7 @@ class TextMessage(TextMessageBase):
                 # When the bot response time exceeds 2-3 seconds, such as during QR code generation,
                 # utilize 'loader_text' as a placeholder.
                 "loader_text": (
-                    "💎"
+                    "⏳"
                 ),
                 # If a message is older than 2 days, the Telegram Bot API does not support direct deletion.
                 # Instead, we modify the message text as 'outdated_text'.
@@ -100,7 +100,7 @@ class TextMessage(TextMessageBase):
                 # When the bot response time exceeds 2-3 seconds, such as during QR code generation,
                 # utilize 'loader_text' as a placeholder.
                 "loader_text": (
-                    "💎"
+                    "⏳"
                 ),
                 # If a message is older than 2 days, the Telegram Bot API does not support direct deletion.
                 # Instead, we modify the message text as 'outdated_text'.
