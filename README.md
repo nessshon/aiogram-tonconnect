@@ -2,7 +2,7 @@
 
 [![TON](https://img.shields.io/badge/TON-grey?logo=TON&logoColor=40AEF0)](https://ton.org)
 [![PyPI](https://img.shields.io/pypi/v/aiogram-tonconnect.svg?color=FFE873&labelColor=3776AB)](https://pypi.python.org/pypi/aiogram-tonconnect)
-![Python Versions](https://img.shields.io/badge/Python-3.7%20--%203.12-black?color=FFE873&labelColor=3776AB)
+![Python Versions](https://img.shields.io/badge/Python-3.8%20--%203.12-black?color=FFE873&labelColor=3776AB)
 [![License](https://img.shields.io/github/license/nessshon/aiogram-tonconnect)](https://github.com/nessshon/aiogram-tonconnect/blob/main/LICENSE)
 
 
