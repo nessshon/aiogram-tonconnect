@@ -62,6 +62,10 @@ open-source community.
 We welcome your contributions! If you have ideas for improvement or have identified a bug, please create an issue or
 submit a pull request.
 
+## Support
+
+Supported by [TON Society](https://github.com/ton-society/grants-and-bounties), Grants and Bounties program.
+
 ## Donations
 
 **TON** - `EQC-3ilVr-W0Uc3pLrGJElwSaFxvhXXfkiQA3EwdVBHNNess`
