@@ -49,7 +49,7 @@ async def select_language_handler(call: CallbackQuery, atc_manager: ATCManager) 
         )
         # Open the connect wallet window using the ATCManager instance
         # and the specified callbacks
-        await atc_manager.connect_wallet(callbacks)
+        await atc_manager.connect_wallet(callbacks, check_proof=True)
 
     # Acknowledge the callback query
     await call.answer()
@@ -80,7 +80,7 @@ async def main_menu_handler(call: CallbackQuery, atc_manager: ATCManager) -> Non
 
         # Open the connect wallet window using the ATCManager instance
         # and the specified callbacks
-        await atc_manager.connect_wallet(callbacks)
+        await atc_manager.connect_wallet(callbacks, check_proof=True)
 
     # Acknowledge the callback query
     await call.answer()
