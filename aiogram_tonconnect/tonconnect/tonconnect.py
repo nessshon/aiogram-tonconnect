@@ -27,6 +27,7 @@ class AiogramTonConnect(BaseTonConnect):
             manifest_url: str,
             redirect_url: str = None,
             exclude_wallets: Optional[List[str]] = None,
+            tonapi_token: Optional[str] = None,
             *args,
             **kwargs,
     ) -> None:
@@ -35,6 +36,7 @@ class AiogramTonConnect(BaseTonConnect):
         super().__init__(*args, **kwargs)
         self.redirect_url = redirect_url
         self.wallet_manager = WalletManager(exclude_wallets=exclude_wallets)
+        self.tonapi_token = tonapi_token
 
     async def get_wallets(self=None) -> List[AppWallet]:
         """
@@ -45,8 +47,14 @@ class AiogramTonConnect(BaseTonConnect):
         return await self.wallet_manager.get_wallets()
 
     def _create_provider(self, wallet: dict) -> BridgeProvider:
-        provider = BridgeProvider(self._storage, wallet, redirect_url=self.redirect_url)
+        provider = BridgeProvider(
+            self._storage,
+            wallet,
+            redirect_url=self.redirect_url,
+            tonapi_token=self.tonapi_token,
+        )
         provider.listen(self._wallet_events_listener)
+        self._provider = provider
         return provider
 
     async def disconnect(self):
