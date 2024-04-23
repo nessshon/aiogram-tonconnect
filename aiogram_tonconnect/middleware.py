@@ -70,52 +70,54 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
         :param data: Contextual data. Will be mapped to handler arguments
         :return: :class:`Any`
         """
-        state: FSMContext = data.get("state")
-        state_data = await state.get_data()
-
-        account_wallet = state_data.get("account_wallet")
-        account_wallet = AccountWallet(**account_wallet) if account_wallet else None
-        data["account_wallet"] = account_wallet
-
-        info_wallet = state_data.get("info_wallet")
-        info_wallet = InfoWallet(**info_wallet) if info_wallet else None
-        data["info_wallet"] = info_wallet
-
-        app_wallet = state_data.get("app_wallet")
-        app_wallet = AppWallet(**app_wallet) if app_wallet else None
-        data["app_wallet"] = app_wallet
-
         user: User = data.get("event_from_user")
-        language_code = state_data.get("language_code")
-        language_code = language_code if language_code else user.language_code
-        last_transaction_boc = state_data.get("last_transaction_boc")
 
-        atc_user = ATCUser(
-            id=user.id,
-            language_code=language_code,
-            last_transaction_boc=last_transaction_boc,
-            info_wallet=info_wallet,
-            app_wallet=app_wallet,
-            account_wallet=account_wallet,
-        )
-        data["atc_user"] = atc_user
+        if user:
+            state: FSMContext = data.get("state")
+            state_data = await state.get_data()
 
-        tonconnect = AiogramTonConnect(
-            storage=SessionStorage(self.storage, atc_user.id),
-            manifest_url=self.manifest_url,
-            redirect_url=self.redirect_url,
-            exclude_wallets=self.exclude_wallets,
-            tonapi_token=self.tonapi_token,
-        )
-        atc_manager = ATCManager(
-            storage=self.storage,
-            tonconnect=tonconnect,
-            text_message=self.text_message(atc_user.language_code),
-            inline_keyboard=self.inline_keyboard(atc_user.language_code),
-            qrcode_provider=self.qrcode_provider,
-            user=atc_user,
-            data=data,
-        )
-        data["atc_manager"] = atc_manager
+            account_wallet = state_data.get("account_wallet")
+            account_wallet = AccountWallet(**account_wallet) if account_wallet else None
+            data["account_wallet"] = account_wallet
+
+            info_wallet = state_data.get("info_wallet")
+            info_wallet = InfoWallet(**info_wallet) if info_wallet else None
+            data["info_wallet"] = info_wallet
+
+            app_wallet = state_data.get("app_wallet")
+            app_wallet = AppWallet(**app_wallet) if app_wallet else None
+            data["app_wallet"] = app_wallet
+
+            language_code = state_data.get("language_code")
+            language_code = language_code if language_code else user.language_code
+            last_transaction_boc = state_data.get("last_transaction_boc")
+
+            atc_user = ATCUser(
+                id=user.id,
+                language_code=language_code,
+                last_transaction_boc=last_transaction_boc,
+                info_wallet=info_wallet,
+                app_wallet=app_wallet,
+                account_wallet=account_wallet,
+            )
+            data["atc_user"] = atc_user
+
+            tonconnect = AiogramTonConnect(
+                storage=SessionStorage(self.storage, atc_user.id),
+                manifest_url=self.manifest_url,
+                redirect_url=self.redirect_url,
+                exclude_wallets=self.exclude_wallets,
+                tonapi_token=self.tonapi_token,
+            )
+            atc_manager = ATCManager(
+                storage=self.storage,
+                tonconnect=tonconnect,
+                text_message=self.text_message(atc_user.language_code),
+                inline_keyboard=self.inline_keyboard(atc_user.language_code),
+                qrcode_provider=self.qrcode_provider,
+                user=atc_user,
+                data=data,
+            )
+            data["atc_manager"] = atc_manager
 
         return await handler(event, data)
