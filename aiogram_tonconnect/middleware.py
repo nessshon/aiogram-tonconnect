@@ -72,7 +72,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
         """
         user: User = data.get("event_from_user")
 
-        if user:
+        if user and not user.is_bot:
             state: FSMContext = data.get("state")
             state_data = await state.get_data()
 
