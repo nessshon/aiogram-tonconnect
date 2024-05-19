@@ -2,7 +2,7 @@ from typing import Callable, Dict, Any, Awaitable, Optional, Type, List, Union
 
 from aiogram import BaseMiddleware
 from aiogram.fsm.context import FSMContext
-from aiogram.types import TelegramObject, User
+from aiogram.types import TelegramObject, User, Chat
 
 from .manager import ATCManager
 from .tonconnect import AiogramTonConnect
@@ -71,8 +71,9 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
         :return: :class:`Any`
         """
         user: User = data.get("event_from_user")
+        chat: Chat = data.get("event_chat")
 
-        if user and not user.is_bot:
+        if chat and chat.type == "private" and user and not user.is_bot:
             state: FSMContext = data.get("state")
             state_data = await state.get_data()
 
