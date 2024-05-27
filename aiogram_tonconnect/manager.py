@@ -500,7 +500,6 @@ class ATCManager:
         """
         try:
             await self.tonconnect.restore_connection()
-            await self.tonconnect.unpause_connection()
 
             data = await self.state.get_data()
             transaction = data.get("transaction")
@@ -537,6 +536,5 @@ class ATCManager:
         except Exception:
             raise
         finally:
-            self.tonconnect.pause_connection()
             self.task_storage.remove()
         return
