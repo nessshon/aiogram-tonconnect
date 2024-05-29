@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import Enum
 from typing import Awaitable, Callable, Dict, List, Optional, Any, Union
 
 from pydantic import BaseModel, Field
@@ -169,7 +169,7 @@ class TransactionMessage(BaseModel):
     payload: Optional[str] = Field(default="")
 
 
-class CHAIN(IntEnum):
+class CHAIN(str, Enum):
     MAINNET = "-239"
     TESTNET = "-3"
 
