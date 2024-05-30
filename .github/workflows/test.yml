@@ -18,4 +18,4 @@ jobs:
           pip install -r requirements.txt -r requirements-dev.txt
       - name: Test with pytest
         run: |
-           python -m pytest
+          python -m pytest --cov-report term-missing --cov=aiogram_tonconnect 
