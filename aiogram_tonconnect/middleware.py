@@ -25,6 +25,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
     :param manifest_url: URL to the AiogramTonConnect manifest.
     :param redirect_url: URL to the redirect after connecting.
     :param exclude_wallets: List of wallet names to exclude.
+    :param wallets_order: Preferred wallets order.
     :param qrcode_provider: QRImageProviderBase or QRUrlProviderBase instance.
         Available default classes:
         - QRImageProvider: Generates QR codes locally using the library and
@@ -44,11 +45,13 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
             inline_keyboard: Optional[Type[InlineKeyboardBase]] = None,
             qrcode_provider: Optional[Union[QRImageProviderBase, QRUrlProviderBase]] = None,
             tonapi_token: Optional[str] = None,
+            wallets_order: Optional[List[str]] = None,
     ) -> None:
         self.storage = storage
         self.manifest_url = manifest_url
         self.redirect_url = redirect_url
         self.exclude_wallets = exclude_wallets
+        self.wallets_order = wallets_order
 
         self.qrcode_provider = qrcode_provider or QRImageProvider()
         self.text_message = text_message or TextMessage
@@ -108,6 +111,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
                 manifest_url=self.manifest_url,
                 redirect_url=self.redirect_url,
                 exclude_wallets=self.exclude_wallets,
+                wallets_order=self.wallets_order,
                 tonapi_token=self.tonapi_token,
             )
             atc_manager = ATCManager(

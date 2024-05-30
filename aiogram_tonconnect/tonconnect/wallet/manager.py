@@ -95,12 +95,14 @@ class WalletManager:
             exclude_wallets: List[str] = None,
             cache_ttl: int = None,
             file_path: str = None,
+            wallets_order: List[str] = None,
     ) -> None:
         """
         Initialize the WalletManager.
 
         :param wallets_list_source_url: URL to fetch the wallets list.
         :param exclude_wallets: List of wallet names to exclude.
+        :param wallets_order: Preferred wallets order.
         :param cache_ttl: Time-to-live for the cache, in seconds.
         :param file_path: Path to the fallback wallets file.
         """
@@ -108,6 +110,7 @@ class WalletManager:
         self.fallback_manager = _FallbackWalletManager(file_path)
 
         self._exclude_wallets = exclude_wallets
+        self._wallets_order = wallets_order
         self._wallets_list_source_url = wallets_list_source_url
 
     async def __fetch(self) -> List[Dict[str, Any]]:
@@ -161,10 +164,23 @@ class WalletManager:
         await self.cache_manager.save_wallets(wallets)
         await self.fallback_manager.save_wallets(wallets)
 
+    def __order_wallets(self, wallets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        if self._wallets_order is None:
+            return wallets
+
+        def sort_by_order(wallet: Dict[str, Any]) -> int:
+            try:
+                return self._wallets_order.index(wallet["app_name"])
+            except ValueError:
+                return len(self._wallets_order)
+
+        return list(sorted(wallets, key=sort_by_order))
+
     def __process_wallets(self, wallets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         excluded_wallets = self.__exclude(wallets)
         supported_wallets = self.__get_supported(excluded_wallets)
-        return supported_wallets
+        ordered_wallets = self.__order_wallets(supported_wallets)
+        return ordered_wallets
 
     async def get_wallets(self) -> List[AppWallet]:
         """

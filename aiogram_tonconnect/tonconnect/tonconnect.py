@@ -17,6 +17,7 @@ class AiogramTonConnect(BaseTonConnect):
     :param manifest_url: URL to the manifest file.
     :param redirect_url: URL to the redirect after connecting.
     :param exclude_wallets: Optional list of wallet names to exclude.
+    :param wallets_order: Optional preferred wallets order.
     :param args: Additional positional arguments.
     :param kwargs: Additional keyword arguments.
     """
@@ -28,6 +29,7 @@ class AiogramTonConnect(BaseTonConnect):
             redirect_url: str = None,
             exclude_wallets: Optional[List[str]] = None,
             tonapi_token: Optional[str] = None,
+            wallets_order: Optional[List[str]] = None,
             *args,
             **kwargs,
     ) -> None:
@@ -35,7 +37,7 @@ class AiogramTonConnect(BaseTonConnect):
         kwargs["manifest_url"] = manifest_url
         super().__init__(*args, **kwargs)
         self.redirect_url = redirect_url
-        self.wallet_manager = WalletManager(exclude_wallets=exclude_wallets)
+        self.wallet_manager = WalletManager(exclude_wallets=exclude_wallets, wallets_order=wallets_order)
         self.tonapi_token = tonapi_token
 
     async def get_wallets(self=None) -> List[AppWallet]:
