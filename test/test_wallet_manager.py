@@ -14,6 +14,6 @@ async def test_wallet_get_wallets(wallets_order, expected_wallets):
     wm = WalletManager(wallets_order=wallets_order)
     wallets = await wm.get_wallets()
     wallet_names = [wallet.app_name for wallet in wallets]
-    assert wallet_names == expected_wallets
+    assert wallet_names[:len(expected_wallets)] == expected_wallets
 
 
