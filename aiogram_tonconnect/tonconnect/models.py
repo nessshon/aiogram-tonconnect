@@ -136,7 +136,7 @@ class ATCUser(BaseModel):
     """
 
     id: int
-    language_code: str
+    language_code: Optional[str] = Field(default=None)
     app_wallet: Optional[AppWallet] = Field(default=None)
     info_wallet: Optional[InfoWallet] = Field(default=None)
     account_wallet: Optional[AccountWallet] = Field(default=None)
