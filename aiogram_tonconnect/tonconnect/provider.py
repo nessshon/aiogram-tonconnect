@@ -35,7 +35,7 @@ class BridgeGateway(BaseBridgeGateway):
         bridge_url += f'&topic={topic}'
         headers = {'Content-type': 'text/plain;charset=UTF-8'}
 
-        if "tonapi" in bridge_base and self.tonapi_token:
+        if self.tonapi_token and "tonapi" in bridge_base or "ton.space" in bridge_base:
             headers["Authorization"] = f"Bearer {self.tonapi_token}"
 
         async with ClientSession(headers=headers) as session:
@@ -61,7 +61,7 @@ class BridgeGateway(BaseBridgeGateway):
         resolve = loop.create_future()
 
         session = ClientSession()
-        if "tonapi" in bridge_base and self.tonapi_token:
+        if self.tonapi_token and "tonapi" in bridge_base or "ton.space" in bridge_base:
             headers = {"Authorization": f"Bearer {self.tonapi_token}"}
             session.headers.update(headers)
 
