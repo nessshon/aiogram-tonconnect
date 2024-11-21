@@ -174,7 +174,7 @@ class BridgeProvider(BaseBridgeProvider):
             listener(wallet_message)
 
     def _generate_tg_universal_url(self, universal_url: str, request: dict):
-        universal_url = universal_url.replace("attach=wallet&mode=compact", "mode=compact&startattach=")
+        universal_url = universal_url.replace("attach=wallet", "mode=compact&startattach=")
         link = self._generate_regular_universal_url('about:blank', request)
         link_params = link.split('?')[1]
 
