@@ -12,6 +12,11 @@
 ![Downloads](https://pepy.tech/badge/aiogram-tonconnect/month)
 ![Downloads](https://pepy.tech/badge/aiogram-tonconnect/week)
 
+## Important Note:
+This library is temporarily unmaintained and contains known bugs. To address these issues, I’ve written a new implementation where the errors have been fixed and improvements made. You can find the updated version with examples here: [https://github.com/nessshon/tonutils](https://github.com/nessshon/tonutils?tab=readme-ov-file#ton-connect-integration).
+
+##
+
 **Aiogram TON Connect UI** is a middleware library that streamlines the integration
 of [TON Connect](https://github.com/ton-connect) technology into Telegram bots based
 on [aiogram](https://github.com/aiogram/). It offers a pre-built user interface and orchestrates the interaction flow
