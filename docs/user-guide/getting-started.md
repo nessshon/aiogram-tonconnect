@@ -69,6 +69,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram_tonconnect.handlers import AiogramTonConnectHandlers
 from aiogram_tonconnect.middleware import AiogramTonConnectMiddleware
+from aiogram_tonconnect.utils.qrcode import QRUrlProvider
 
 # Your bot token
 BOT_TOKEN = "1234567890:QWERTYUIOPASDFGHJKLZXCVBNM"
@@ -78,7 +79,8 @@ REDIS_DSN = "redis://localhost:6379/0"
 
 # Link to your created manifest.json
 MANIFEST_URL = "https://raw.githubusercontent.com/nessshon/aiogram-tonconnect/main/tonconnect-manifest.json"
-
+#list of fallback wallets
+file_path=file_path= os.path.join(os.path.dirname(__file__),'wallets_fallback.json')
 # List of wallets to exclude
 EXCLUDE_WALLETS = ["mytonwallet"]
 
@@ -99,7 +101,8 @@ async def main():
             redis=storage.redis,
             manifest_url=MANIFEST_URL,
             exclude_wallets=EXCLUDE_WALLETS,
-            qrcode_type="url",  # or "bytes" if you prefer to generate QR codes locally.
+            qrcode_type=QRUrlProvider(),
+            file_path=file_path  # or "bytes" if you prefer to generate QR codes locally.
         )
     )
 
