@@ -79,7 +79,7 @@ REDIS_DSN = "redis://localhost:6379/0"
 
 # Link to your created manifest.json
 MANIFEST_URL = "https://raw.githubusercontent.com/nessshon/aiogram-tonconnect/main/tonconnect-manifest.json"
-#list of fallback wallets
+#list of fallback wallets specify the name in the file path creation
 file_path=file_path= os.path.join(os.path.dirname(__file__),'wallets_fallback.json')
 # List of wallets to exclude
 EXCLUDE_WALLETS = ["mytonwallet"]
