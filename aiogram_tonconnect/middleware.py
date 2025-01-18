@@ -46,6 +46,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
             qrcode_provider: Optional[Union[QRImageProviderBase, QRUrlProviderBase]] = None,
             tonapi_token: Optional[str] = None,
             wallets_order: Optional[List[str]] = None,
+            file_path: Optional[str] = None,
     ) -> None:
         self.storage = storage
         self.manifest_url = manifest_url
@@ -58,6 +59,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
         self.inline_keyboard = inline_keyboard or InlineKeyboard
 
         self.tonapi_token = tonapi_token
+        self.file_path = file_path
 
     async def __call__(
             self,
@@ -113,6 +115,7 @@ class AiogramTonConnectMiddleware(BaseMiddleware):
                 exclude_wallets=self.exclude_wallets,
                 wallets_order=self.wallets_order,
                 tonapi_token=self.tonapi_token,
+                file_path=self.file_path,
             )
             atc_manager = ATCManager(
                 storage=self.storage,

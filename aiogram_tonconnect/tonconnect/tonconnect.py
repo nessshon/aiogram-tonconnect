@@ -30,6 +30,7 @@ class AiogramTonConnect(BaseTonConnect):
             exclude_wallets: Optional[List[str]] = None,
             tonapi_token: Optional[str] = None,
             wallets_order: Optional[List[str]] = None,
+            file_path: Optional[str] = None,
             *args,
             **kwargs,
     ) -> None:
@@ -37,7 +38,7 @@ class AiogramTonConnect(BaseTonConnect):
         kwargs["manifest_url"] = manifest_url
         super().__init__(*args, **kwargs)
         self.redirect_url = redirect_url
-        self.wallet_manager = WalletManager(exclude_wallets=exclude_wallets, wallets_order=wallets_order)
+        self.wallet_manager = WalletManager(exclude_wallets=exclude_wallets, wallets_order=wallets_order,file_path=file_path)
         self.tonapi_token = tonapi_token
 
     async def get_wallets(self=None) -> List[AppWallet]:
