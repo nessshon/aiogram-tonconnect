@@ -5,36 +5,47 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="aiogram-tonconnect",
-    version="0.14.3",
+    version="0.14.4",
     author="nessshon",
-    description="TON Connect UI for aiogram bots.",
+    description=(
+        "aiogram-tonconnect is a user-friendly library for integrating TON Connect UI "
+        "into aiogram-based Telegram bots."
+    ),
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=setuptools.find_packages(exclude=["example", "docs"]),
+    url="https://github.com/nessshon/aiogram-tonconnect/",
+    project_urls={
+        "Bot example": "https://t.me/aiogramTONConnectBot/",
+        "Source Code": "https://github.com/nessshon/aiogram-tonconnect/",
+        "Usage example": "https://github.com/nessshon/aiogram-tonconnect/tree/main/example/",
+    },
+    packages=setuptools.find_packages(exclude=["example"]),
+    package_data={"aiogram_tonconnect": ["py.typed"]},
+    python_requires=">=3.10",
     install_requires=[
-        "aiofiles",
-        "aiogram",
-        "aiohttp",
-        "cachetools",
-        "pillow",
-        "pydantic",
-        "pytonconnect",
-        "pytoniq-core",
-        "qrcode-styled",
-        "redis",
+        "aiogram>=3.0.0",
+        "cachetools>=5.3.0",
+        "pillow>=10.0.0",
+        "qrcode-styled>=0.2.2",
+        "redis>=5.0.5",
+        "tonutils>=0.2.4",
     ],
     classifiers=[
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Framework :: AsyncIO",
+        "Environment :: Console",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+        "Operating System :: OS Independent"
     ],
-    url="https://github.com/nessshon/aiogram-tonconnect/",
-    project_urls={
-        "Documentation": "https://nessshon.github.io/aiogram-tonconnect/",
-        "Bot example": "https://t.me/aiogramTONConnectBot/",
-    },
+
+    keywords=(
+        "aiogram, Telegram bots, TON blockchain, TON Connect, "
+        "asynchronous, crypto, qrcode"
+    ),
+    license="MIT",
 )
