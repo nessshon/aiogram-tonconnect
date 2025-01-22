@@ -1,7 +1,7 @@
 from asyncio import Task
-from typing import Dict
+from typing import Dict, Optional
 
-tasks: Dict[int, Task] = {}
+TASKS: Dict[int, Task] = {}
 
 
 class TaskStorage:
@@ -20,17 +20,17 @@ class TaskStorage:
 
         :param task: Task to be added.
         """
-        if self.user_id in tasks:
+        if self.user_id in TASKS:
             self.remove()
-        tasks[self.user_id] = task
+        TASKS[self.user_id] = task
 
-    def get(self) -> Task:
+    def get(self) -> Optional[Task]:
         """
         Get the task associated with the user.
 
         :return: Task associated with the user, or None if not found.
         """
-        return tasks.get(self.user_id)
+        return TASKS.get(self.user_id)
 
     def remove(self) -> None:
         """
@@ -41,4 +41,4 @@ class TaskStorage:
         task = self.get()
         if task and not task.done():
             task.cancel()
-        tasks.pop(self.user_id, None)
+        TASKS.pop(self.user_id, None)

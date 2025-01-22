@@ -1,10 +1,9 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Dict
+from typing import List, Dict, Optional
 
-from aiogram.utils.keyboard import InlineKeyboardMarkup as Markup, InlineKeyboardBuilder
 from aiogram.utils.keyboard import InlineKeyboardButton as Button
-
-from ..tonconnect.models import AppWallet
+from aiogram.utils.keyboard import InlineKeyboardMarkup as Markup, InlineKeyboardBuilder
+from tonutils.tonconnect.models import WalletApp
 
 
 class InlineKeyboardBase(metaclass=ABCMeta):
@@ -39,8 +38,8 @@ class InlineKeyboardBase(metaclass=ABCMeta):
     @abstractmethod
     def connect_wallet(
             self,
-            wallets: List[AppWallet],
-            selected_wallet: AppWallet,
+            wallets: List[WalletApp],
+            selected_wallet: WalletApp,
             universal_url: str,
             wallet_name: str,
             width: int = 2,
@@ -64,6 +63,14 @@ class InlineKeyboardBase(metaclass=ABCMeta):
 
         :return: Inline keyboard markup.
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    def connect_wallet_rejected(self) -> Markup:
+        raise NotImplementedError
+
+    @abstractmethod
+    def connect_wallet_timeout(self) -> Markup:
         raise NotImplementedError
 
     @abstractmethod
@@ -98,7 +105,7 @@ class InlineKeyboardBase(metaclass=ABCMeta):
     def _get_button(
             self,
             code: str,
-            url: str = None,
+            url: Optional[str] = None,
             **kwargs,
     ) -> Button:
         """
@@ -134,10 +141,26 @@ class InlineKeyboard(InlineKeyboardBase):
             },
         }
 
+    def _retry_markup(self) -> Markup:
+        inline_keyboard = [
+            [self._get_button("back"),
+             self._get_button("retry")],
+        ]
+        return Markup(inline_keyboard=inline_keyboard)
+
+    def connect_wallet_proof_wrong(self) -> Markup:
+        return self._retry_markup()
+
+    def connect_wallet_timeout(self) -> Markup:
+        return self._retry_markup()
+
+    def connect_wallet_rejected(self) -> Markup:
+        return self._retry_markup()
+
     def connect_wallet(
             self,
-            wallets: List[AppWallet],
-            selected_wallet: AppWallet,
+            wallets: List[WalletApp],
+            selected_wallet: WalletApp,
             universal_url: str,
             wallet_name: str,
             width: int = 2,
@@ -156,30 +179,15 @@ class InlineKeyboard(InlineKeyboardBase):
         builder.row(self._get_button("back"))
         return builder.as_markup()
 
-    def connect_wallet_proof_wrong(self) -> Markup:
-        inline_keyboard = [
-            [self._get_button("back"),
-             self._get_button("retry")],
-        ]
-        return Markup(inline_keyboard=inline_keyboard)
+    def send_transaction_timeout(self) -> Markup:
+        return self._retry_markup()
+
+    def send_transaction_rejected(self) -> Markup:
+        return self._retry_markup()
 
     def send_transaction(self, wallet_name: str, url: str) -> Markup:
         inline_keyboard = [
             [self._get_button("open_wallet", url=url, wallet_name=wallet_name)],
             [self._get_button("back")],
-        ]
-        return Markup(inline_keyboard=inline_keyboard)
-
-    def send_transaction_timeout(self) -> Markup:
-        inline_keyboard = [
-            [self._get_button("back"),
-             self._get_button("retry")],
-        ]
-        return Markup(inline_keyboard=inline_keyboard)
-
-    def send_transaction_rejected(self) -> Markup:
-        inline_keyboard = [
-            [self._get_button("back"),
-             self._get_button("retry")],
         ]
         return Markup(inline_keyboard=inline_keyboard)

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
+import time
 from contextlib import suppress
-from typing import Dict, Any, Union, Optional
+from typing import Dict, Any, Union, Optional, Callable
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
@@ -13,29 +15,31 @@ from aiogram.types import (
     Message,
 )
 from aiogram.utils.markdown import hide_link
-
-from pytonconnect.exceptions import (
-    UserRejectsError,
-    WalletNotConnectedError,
+from tonutils.tonconnect import (
+    TonConnect,
+    Connector,
 )
+from tonutils.tonconnect.models import (
+    WalletApp,
+    WalletInfo,
+    Transaction,
+    SendTransactionResponse,
+)
+from tonutils.tonconnect.utils.exceptions import (
+    WalletNotConnectedError,
+    RequestTimeoutError,
+    UserRejectsError, )
+from tonutils.tonconnect.utils.proof import generate_proof_payload
 
-from .tonconnect import AiogramTonConnect
-from .tonconnect.storage import (
+from .tonconnect.callbacks import (
     ConnectWalletCallbackStorage,
     SendTransactionCallbackStorage,
-    TaskStorage,
 )
 from .tonconnect.models import (
-    AccountWallet,
     ATCUser,
-    AppWallet,
     ConnectWalletCallbacks,
-    SendTransactionCallbacks,
-    Transaction,
-    InfoWallet,
-)
-from .tonconnect.storage.base import ATCStorageBase
-from .utils.address import Address
+    SendTransactionCallbacks, InfoWallet, AccountWallet, )
+from .tonconnect.tasks import TaskStorage
 from .utils.exceptions import (
     LanguageCodeNotSupported,
     RetryConnectWalletError,
@@ -44,7 +48,6 @@ from .utils.exceptions import (
     MESSAGE_EDIT_ERRORS,
 )
 from .utils.keyboards import InlineKeyboardBase
-from .utils.proof import generate_payload, check_payload
 from .utils.qrcode import (
     QRImageProviderBase,
     QRUrlProviderBase,
@@ -58,7 +61,6 @@ class ATCManager:
     Manager class for AiogramTonConnect integration.
 
     :param user: The AiogramTonConnect user.
-    :param storage: ATCStorageBase instance.
     :param tonconnect: AiogramTonConnect instance.
     :param text_message: TextMessageBase class for managing text messages.
     :param inline_keyboard: InlineKeyboardBase class for managing inline keyboards.
@@ -69,15 +71,15 @@ class ATCManager:
     def __init__(
             self,
             user: ATCUser,
-            storage: ATCStorageBase,
-            tonconnect: AiogramTonConnect,
+            connector: Connector,
+            tonconnect: TonConnect,
             text_message: TextMessageBase,
             inline_keyboard: InlineKeyboardBase,
             qrcode_provider: Union[QRImageProviderBase, QRUrlProviderBase],
             data: Dict[str, Any],
     ) -> None:
         self.user = user
-        self.storage = storage
+        self.connector = connector
         self.tonconnect = tonconnect
 
         self.__data: Dict[str, Any] = data
@@ -85,12 +87,18 @@ class ATCManager:
         self.__inline_keyboard = inline_keyboard
         self.__qrcode_provider = qrcode_provider
 
-        self.bot: Bot = data.get("bot")
-        self.state: FSMContext = data.get("state")
+        self.bot: Bot = data.get("bot")  # type: ignore
+        self.state: FSMContext = data.get("state")  # type: ignore
 
-        self.task_storage = TaskStorage(user.id)
-        self.connect_wallet_callbacks_storage = ConnectWalletCallbackStorage(storage, user.id)
-        self.send_transaction_callbacks_storage = SendTransactionCallbackStorage(storage, user.id)
+        self.connect_wallet_callbacks = ConnectWalletCallbackStorage(
+            storage=tonconnect.storage,
+            user_id=user.id,
+        )
+        self.send_transaction_callbacks = SendTransactionCallbackStorage(
+            storage=tonconnect.storage,
+            user_id=user.id,
+        )
+        self.task_storage = TaskStorage(user_id=user.id)
 
     @property
     def middleware_data(self) -> Dict[str, Any]:
@@ -98,6 +106,34 @@ class ATCManager:
         Get middleware data.
         """
         return self.__data
+
+    async def __get_filtered_kwargs(self, func: Callable) -> Dict[str, Any]:
+        params = inspect.signature(func).parameters
+        return {k: v for k, v in self.middleware_data.items() if k in params}
+
+    async def __execute_callback(self, storage, callback_type: str) -> None:
+        """
+        Generic method to execute a callback of the given type.
+
+        :param storage: The storage containing the callback functions.
+        :param callback_type: The type of callback to execute ('before_callback' or 'after_callback').
+        """
+        callbacks = await storage.get()
+        callback = getattr(callbacks, callback_type)
+        filtered_kwargs = await self.__get_filtered_kwargs(callback)
+        await callback(**filtered_kwargs)
+
+    async def execute_connect_wallet_after_callback(self) -> None:
+        await self.__execute_callback(self.connect_wallet_callbacks, "after_callback")
+
+    async def execute_connect_wallet_before_callback(self) -> None:
+        await self.__execute_callback(self.connect_wallet_callbacks, "before_callback")
+
+    async def execute_transaction_after_callback(self) -> None:
+        await self.__execute_callback(self.send_transaction_callbacks, "after_callback")
+
+    async def execute_transaction_before_callback(self) -> None:
+        await self.__execute_callback(self.send_transaction_callbacks, "before_callback")
 
     async def update_interfaces_language(self, language_code: str) -> None:
         """
@@ -122,14 +158,12 @@ class ATCManager:
     async def connect_wallet(
             self,
             callbacks: ConnectWalletCallbacks,
-            check_proof: Optional[bool] = False,
             proof_payload: Optional[str] = None,
     ) -> None:
         """
         Open the connect wallet window.
 
         :param callbacks: Callbacks to execute.
-        :param check_proof: Set to True to check ton_proof; False to use ton_addr.
         :param proof_payload: Payload for ton_proof.
 
         If check_proof is True and proof_payload is not specified, it will be generated automatically.
@@ -144,26 +178,20 @@ class ATCManager:
             text = self.__text_message.get("loader_text")
             await self._send_message(text)
 
-        await self.connect_wallet_callbacks_storage.add(callbacks)
+        await self.connect_wallet_callbacks.add(callbacks)
 
         state_data = await self.state.get_data()
         wallets = await self.tonconnect.get_wallets()
 
-        app_wallet_dict = state_data.get("app_wallet") or wallets[0].model_dump()
-        app_wallet = AppWallet(**app_wallet_dict)
+        app_wallet_dict = state_data.get("app_wallet") or wallets[0].to_dict()
+        app_wallet = WalletApp.from_dict(app_wallet_dict)
 
-        if check_proof:
-            proof_payload = proof_payload or generate_payload()
-            ton_proof = {"ton_proof": proof_payload}
-            universal_url = await self.tonconnect.connect(app_wallet.model_dump(), ton_proof)
-        else:
-            proof_payload = None
-            universal_url = await self.tonconnect.connect(app_wallet.model_dump())
+        ton_proof = proof_payload or generate_proof_payload()
+        universal_url = await self.connector.connect_wallet(app_wallet, ton_proof=ton_proof)
 
         await self.state.update_data(
-            app_wallet=app_wallet.model_dump(),
+            app_wallet=app_wallet.to_dict(),
             proof_payload=proof_payload,
-            check_proof=check_proof,
         )
 
         task = asyncio.create_task(self.__wait_connect_wallet_task())
@@ -183,9 +211,7 @@ class ATCManager:
         """
         Retry open the connect wallet window.
         """
-        state_data = await self.state.get_data()
-        check_proof = state_data.get("check_proof", False)
-        callbacks = await self.connect_wallet_callbacks_storage.get()
+        callbacks = await self.connect_wallet_callbacks.get()
 
         if callbacks is None:
             raise RetryConnectWalletError(
@@ -193,14 +219,14 @@ class ATCManager:
                 "You need a connect wallet first."
             )
 
-        await self.connect_wallet(callbacks, check_proof)
+        await self.connect_wallet(callbacks)
 
     async def _send_connect_wallet_window(
             self,
             text: str,
             reply_markup: InlineKeyboardMarkup,
             universal_url: str,
-            app_wallet: AppWallet,
+            app_wallet: WalletApp,
     ) -> None:
         """
         Send the connect wallet window with appropriate content based on the qrcode_type.
@@ -232,9 +258,9 @@ class ATCManager:
         """
         Disconnect the connected wallet.
         """
+        await self.tonconnect.init_connector(self.user.id)
         with suppress(WalletNotConnectedError):
-            await self.tonconnect.restore_connection()
-            await self.tonconnect.disconnect()
+            await self.connector.disconnect_wallet()
 
     async def send_transaction(
             self,
@@ -247,22 +273,23 @@ class ATCManager:
         :param callbacks: Callbacks to execute.
         :param transaction: The transaction details.
         """
-        await self.state.update_data(transaction=transaction.model_dump())
-        await self.send_transaction_callbacks_storage.add(callbacks)
+        await self.tonconnect.init_connector(self.user.id)
+
+        self.connector._prepare_transaction(transaction)  # noqa
+        self.connector._verify_send_transaction_feature(len(transaction.messages))  # noqa
+
+        await self.state.update_data(transaction=transaction.to_dict())
+        await self.send_transaction_callbacks.add(callbacks)
 
         task = asyncio.create_task(self.__wait_send_transaction_task())
         self.task_storage.add(task)
 
         text = self.__text_message.get("send_transaction").format(
-            wallet_name=self.user.app_wallet.name,
+            wallet_name=self.connector.wallet_app.name,  # type: ignore
         )
-        universal_url = self.user.app_wallet.universal_url
-        if self.user.app_wallet.app_name == "telegram-wallet":
-            universal_url = universal_url.replace(
-                "attach=wallet", "startattach=tonconnect-ret__back"
-            )
+
         reply_markup = self.__inline_keyboard.send_transaction(
-            self.user.app_wallet.name, universal_url,
+            self.connector.wallet_app.name, self.connector.wallet_app.direct_url,  # type: ignore
         )
 
         await self._send_message(text=text, reply_markup=reply_markup)
@@ -270,16 +297,19 @@ class ATCManager:
 
     async def retry_last_send_transaction(self) -> None:
         data = await self.state.get_data()
+        last_rpc_request_id = data.get("rpc_request_id", 0)
+        self.connector.cancel_pending_transaction(last_rpc_request_id)
 
         try:
-            transaction = Transaction.model_validate(data.get("transaction"))
+            transaction = Transaction.from_dict(data.get("transaction"))  # type: ignore
+            transaction.valid_until = int(time.time() + 5 * 60)
         except KeyError:
             raise RetrySendTransactionError(
                 "Last transaction not found. "
                 "You need to send a transaction first."
             )
 
-        callbacks = await self.send_transaction_callbacks_storage.get()
+        callbacks = await self.send_transaction_callbacks.get()
 
         if callbacks is None:
             raise RetrySendTransactionError(
@@ -299,12 +329,22 @@ class ATCManager:
         await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.connect_wallet_proof_wrong)
 
+    async def _connect_wallet_reject(self) -> None:
+        """
+        Handle the user's request to decline the connection.
+        """
+        text = self.__text_message.get("connect_wallet_rejected")
+        reply_markup = self.__inline_keyboard.connect_wallet_rejected()
+
+        await self._send_message(text=text, reply_markup=reply_markup)
+        await self.state.set_state(TcState.connect_wallet_rejected)
+
     async def _connect_wallet_timeout(self) -> None:
         """
         Handle the connect wallet timeout.
         """
         text = self.__text_message.get("connect_wallet_timeout")
-        reply_markup = self.__inline_keyboard.send_transaction_timeout()
+        reply_markup = self.__inline_keyboard.connect_wallet_timeout()
 
         await self._send_message(text=text, reply_markup=reply_markup)
         await self.state.set_state(TcState.connect_wallet_timeout)
@@ -358,7 +398,7 @@ class ATCManager:
             self,
             text: str,
             reply_markup: Optional[InlineKeyboardMarkup] = None,
-    ) -> Message:
+    ) -> Union[Message, bool]:
         """
         Send or edit a message to the user.
 
@@ -389,11 +429,12 @@ class ATCManager:
                 reply_markup=reply_markup,
             )
             await self._delete_previous_message()
-        await self.state.update_data(message_id=message.message_id)
+        if isinstance(message, Message):
+            await self.state.update_data(message_id=message.message_id)
 
         return message
 
-    async def _delete_previous_message(self) -> Union[Message, None]:
+    async def _delete_previous_message(self) -> Optional[Union[Message, bool]]:
         """
         Delete the previous message.
 
@@ -405,27 +446,27 @@ class ATCManager:
         :raises TelegramBadRequest: If there is an issue with deleting or editing the previous message.
         """
         state_data = await self.state.get_data()
-
         message_id = state_data.get("message_id")
-        if not message_id: return  # noqa:E701
 
-        try:
-            await self.bot.delete_message(
-                message_id=message_id,
-                chat_id=self.user.id,
-            )
-        except TelegramBadRequest as ex:
-            if any(e in ex.message for e in MESSAGE_DELETE_ERRORS):
-                try:
-                    text = self.__text_message.get("outdated_text")
-                    return await self.bot.edit_message_text(
-                        message_id=message_id,
-                        chat_id=self.user.id,
-                        text=text,
-                    )
-                except TelegramBadRequest as ex:
-                    if not any(e in ex.message for e in MESSAGE_EDIT_ERRORS):
-                        raise ex
+        if message_id is not None:
+            try:
+                await self.bot.delete_message(
+                    message_id=message_id,
+                    chat_id=self.user.id,
+                )
+            except TelegramBadRequest as ex:
+                if any(e in ex.message for e in MESSAGE_DELETE_ERRORS):
+                    try:
+                        text = self.__text_message.get("outdated_text")
+                        return await self.bot.edit_message_text(
+                            message_id=message_id,
+                            chat_id=self.user.id,
+                            text=text,
+                        )
+                    except TelegramBadRequest as ex:
+                        if not any(e in ex.message for e in MESSAGE_EDIT_ERRORS):
+                            raise ex
+        return None
 
     async def __wait_connect_wallet_task(self) -> None:
         """
@@ -440,40 +481,31 @@ class ATCManager:
         :raises Exception: Any unexpected exception during the process.
         """
         try:
-            for _ in range(1, 361):
-                await asyncio.sleep(.5)
-                if self.tonconnect.connected:
+            async with self.connector.connect_wallet_context() as result:
+                if isinstance(result, WalletInfo):
                     state_data = await self.state.get_data()
-
-                    account_wallet = AccountWallet(
-                        address=Address(hex_address=self.tonconnect.account.address),
-                        state_init=self.tonconnect.account.wallet_state_init,
-                        public_key=self.tonconnect.account.public_key,
-                        chain=self.tonconnect.account.chain,
-                    )
-                    info_wallet = InfoWallet.from_pytonconnect_wallet(self.tonconnect.wallet)
-                    app_wallet = AppWallet(**state_data.get("app_wallet"))
+                    info_wallet = InfoWallet(**self.connector.wallet.to_dict())  # type: ignore
+                    account_wallet = AccountWallet.from_dict(self.connector.account.to_dict())  # type: ignore
 
                     await self.state.update_data(
-                        account_wallet=account_wallet.model_dump(),
-                        info_wallet=info_wallet.model_dump(),
+                        info_wallet=info_wallet.to_dict(),
+                        account_wallet=account_wallet.to_dict(),
                     )
 
                     if state_data.get("check_proof", False):
                         proof_payload = state_data.get("proof_payload")
-                        if not check_payload(proof_payload, info_wallet):
+                        if not self.connector.wallet.verify_proof(proof_payload):  # type: ignore
                             await self._connect_wallet_proof_wrong()
-                            break
+                            return
 
-                    self.middleware_data["account_wallet"] = account_wallet
-                    self.middleware_data["info_wallet"] = info_wallet
-                    self.middleware_data["app_wallet"] = app_wallet
+                    self.middleware_data["connector"] = self.connector
+                    await self.execute_connect_wallet_after_callback()
 
-                    callbacks = await self.connect_wallet_callbacks_storage.get()
-                    await callbacks.after_callback(**self.middleware_data)
-                    break
-            else:
-                await self._connect_wallet_timeout()
+                elif isinstance(result, RequestTimeoutError):
+                    await self._connect_wallet_timeout()
+
+                elif isinstance(result, UserRejectsError):
+                    await self._connect_wallet_reject()
 
         except asyncio.CancelledError:
             pass
@@ -481,7 +513,6 @@ class ATCManager:
             raise
         finally:
             self.task_storage.remove()
-        return
 
     async def __wait_send_transaction_task(self) -> None:
         """
@@ -499,37 +530,33 @@ class ATCManager:
         :raises Exception: Any unexpected exception during the process.
         """
         try:
-            await self.tonconnect.restore_connection()
-
             data = await self.state.get_data()
-            transaction = data.get("transaction")
+            last_rpc_request_id = data.get("rpc_request_id", 0)
+            self.connector.cancel_pending_transaction(last_rpc_request_id)
 
-            result = await asyncio.wait_for(
-                self.tonconnect.send_transaction(transaction=transaction),
-                timeout=300,
-            )
-            if result:
-                last_transaction_boc = result.get("boc")
-                self.user.last_transaction_boc = last_transaction_boc
-                await self.state.update_data(last_transaction_boc=last_transaction_boc)
+            transaction = Transaction.from_dict(data.get("transaction"))  # type: ignore
+            rpc_request_id = await self.connector.send_transaction(transaction)
+            await self.state.update_data(rpc_request_id=rpc_request_id)
 
-                callbacks = await self.send_transaction_callbacks_storage.get()
-                self.middleware_data["boc"] = last_transaction_boc
-                await callbacks.after_callback(**self.middleware_data)
+            async with self.connector.pending_transaction_context(rpc_request_id) as result:
+                if isinstance(result, SendTransactionResponse):
+                    last_transaction_boc = result.boc
+                    self.__data["boc"] = last_transaction_boc
+                    self.user.last_transaction_boc = last_transaction_boc
+                    await self.state.update_data(last_transaction_boc=last_transaction_boc)
+                    await self.execute_transaction_after_callback()
 
-        except UserRejectsError:
-            current_state = await self.state.get_state()
+                elif isinstance(result, RequestTimeoutError):
+                    current_state = await self.state.get_state()
+                    if current_state != TcState.send_transaction.state:
+                        return
+                    await self._send_transaction_timeout()
 
-            if current_state != TcState.send_transaction.state:
-                return None
-            await self._send_transaction_rejected()
-
-        except asyncio.TimeoutError:
-            current_state = await self.state.get_state()
-
-            if current_state != TcState.send_transaction.state:
-                return None
-            await self._send_transaction_timeout()
+                elif isinstance(result, UserRejectsError):
+                    current_state = await self.state.get_state()
+                    if current_state != TcState.send_transaction.state:
+                        return
+                    await self._send_transaction_rejected()
 
         except asyncio.CancelledError:
             pass
@@ -537,4 +564,3 @@ class ATCManager:
             raise
         finally:
             self.task_storage.remove()
-        return

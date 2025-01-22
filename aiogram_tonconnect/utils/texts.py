@@ -51,7 +51,7 @@ class TextMessage(TextMessageBase):
     @property
     def texts_messages(self) -> Dict[str, Dict[str, str]]:
         get_a_wallet_link = "https://ton.org/wallets?filters[wallet_features][slug][$in]=dapp-auth&pagination[limit]=-1"
-        ton_connect_banner_link = "https://telegra.ph//file/a4ddc111ff41692ad5200.jpg"
+        ton_connect_banner_link = "https://raw.githubusercontent.com/nessshon/aiogram-tonconnect/refs/heads/main/public/tonconnect-banner.png"
 
         return {
             "ru": {
@@ -79,6 +79,11 @@ class TextMessage(TextMessageBase):
                     f"{hide_link(ton_connect_banner_link)}"
                     "<b>Предупреждение</b>\n\n"
                     "Время ожидания подключения истекло."
+                ),
+                "connect_wallet_rejected": (
+                    f"{hide_link(ton_connect_banner_link)}"
+                    "<b>Предупреждение</b>\n\n"
+                    "Вы отменили подключение!"
                 ),
                 "send_transaction": (
                     f"{hide_link(ton_connect_banner_link)}"
@@ -121,6 +126,11 @@ class TextMessage(TextMessageBase):
                     f"{hide_link(ton_connect_banner_link)}"
                     "<b>Warning</b>\n\n"
                     "The connection timeout has expired."
+                ),
+                "connect_wallet_rejected": (
+                    f"{hide_link(ton_connect_banner_link)}"
+                    "<b>Warning</b>\n\n"
+                    "You rejected the connection!"
                 ),
                 "send_transaction": (
                     f"{hide_link(ton_connect_banner_link)}"
