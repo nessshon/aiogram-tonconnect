@@ -1,10 +1,6 @@
-aiofiles
-aiogram
-aiohttp
-cachetools
-pillow
-pydantic
-pytonconnect
-pytoniq-core
-qrcode-styled
-redis
+aiogram>=3.0.0
+cachetools>=5.3.0
+pillow>=10.0.0
+qrcode-styled>=0.2.2
+redis>=5.0.5
+tonutils>=0.2.4
