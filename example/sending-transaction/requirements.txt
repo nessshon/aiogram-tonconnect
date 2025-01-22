@@ -1,4 +1,0 @@
-aiogram
-aiogram-tonconnect
-pytoniq-core
-redis

@@ -1,0 +1,3 @@
+aiogram==3.13.1
+aiogram-tonconnect==0.14.3
+environs==14.1.0
