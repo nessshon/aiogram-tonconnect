@@ -12,11 +12,6 @@
 ![Downloads](https://pepy.tech/badge/aiogram-tonconnect/month)
 ![Downloads](https://pepy.tech/badge/aiogram-tonconnect/week)
 
-## Important Note:
-This library is temporarily unmaintained and contains known bugs. To address these issues, I’ve written a new implementation where the errors have been fixed and improvements made. You can find the updated version with examples here: [https://github.com/nessshon/tonutils](https://github.com/nessshon/tonutils?tab=readme-ov-file#ton-connect-integration).
-
-##
-
 **Aiogram TON Connect UI** is a middleware library that streamlines the integration
 of [TON Connect](https://github.com/ton-connect) technology into Telegram bots based
 on [aiogram](https://github.com/aiogram/). It offers a pre-built user interface and orchestrates the interaction flow
@@ -24,8 +19,9 @@ for connecting wallets and initiating transactions. The library takes care of al
 within the bot, encompassing the presentation of QR codes, texts, and keyboards, along with the handling of timeouts and
 user cancellations.
 
-Check out the [documentation](https://nessshon.github.io/aiogram-tonconnect/).\
-Bot example [@aiogramTONConnectBot](https://t.me/aiogramTONConnectBot/).
+- **Usage Example**: Explore practical implementations in
+  the [example](https://github.com/nessshon/aiogram-tonconnect/tree/main/example) section.
+- **Bot Example**: Check out the live demonstration with [@aiogramTONConnectBot](https://t.me/aiogramTONConnectBot).
 
 ## Installation
 
@@ -48,25 +44,6 @@ pip install aiogram-tonconnect
 | [![Image 1](https://telegra.ph//file/555175fd35c05370a64d4.jpg)](https://telegra.ph//file/555175fd35c05370a64d4.jpg) | [![Image 2](https://telegra.ph//file/ef770d825534cf049c1bb.jpg)](https://telegra.ph//file/ef770d825534cf049c1bb.jpg) | [![Image 3](https://telegra.ph//file/502a80771bc07acc6e93b.jpg)](https://telegra.ph//file/502a80771bc07acc6e93b.jpg) |
 | [![Image 4](https://telegra.ph//file/99443226ba404a86586ad.jpg)](https://telegra.ph//file/99443226ba404a86586ad.jpg) | [![Image 5](https://telegra.ph//file/74fba6fca9c273d5f6f30.jpg)](https://telegra.ph//file/74fba6fca9c273d5f6f30.jpg) | [![Image 6](https://telegra.ph//file/656593c298123fea6be60.jpg)](https://telegra.ph//file/656593c298123fea6be60.jpg) |
 
-## Acknowledgments
-
-This project utilizes the following dependencies to enhance its functionality:
-
-- [**aiogram:**](https://pypi.org/project/aiogram/) An asynchronous framework for building Telegram bots.
-- [**pytonconnect:**](https://pypi.org/project/pytonconnect/) Python SDK for TON Connect 2.0.
-- [**pytoniq-core:**](https://pypi.org/project/pytoniq-core/) TON Blockchain primitives.
-- [**qrcode-fastapi:**](https://github.com/nessshon/qrcode-fastapi) Generate QR codes with optional image inclusion,
-  supports base64-encoded.
-- and more...
-
-We extend our gratitude to the maintainers and contributors of these libraries for their valuable contributions to the
-open-source community.
-
-## Contribution
-
-We welcome your contributions! If you have ideas for improvement or have identified a bug, please create an issue or
-submit a pull request.
-
 ## Support
 
 Supported by [TON Society](https://github.com/ton-society/grants-and-bounties), Grants and Bounties program.
@@ -76,6 +53,11 @@ Supported by [TON Society](https://github.com/ton-society/grants-and-bounties), 
 **TON** - `EQC-3ilVr-W0Uc3pLrGJElwSaFxvhXXfkiQA3EwdVBHNNess`
 
 **USDT** (TRC-20) - `TGKmm9H3FApFw8xcgRcZDHSku68vozAjo9`
+
+## Contribution
+
+We welcome your contributions! If you have ideas for improvement or have identified a bug, please create an issue or
+submit a pull request.
 
 ## License
 
