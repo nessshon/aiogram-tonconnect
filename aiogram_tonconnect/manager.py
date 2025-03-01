@@ -28,7 +28,9 @@ from tonutils.tonconnect.models import (
 from tonutils.tonconnect.utils.exceptions import (
     WalletNotConnectedError,
     RequestTimeoutError,
-    UserRejectsError, )
+    UserRejectsError,
+    TonConnectError,
+)
 from tonutils.tonconnect.utils.proof import generate_proof_payload
 
 from .tonconnect.callbacks import (
@@ -158,12 +160,14 @@ class ATCManager:
     async def connect_wallet(
             self,
             callbacks: ConnectWalletCallbacks,
+            check_proof: bool = True,
             proof_payload: Optional[str] = None,
     ) -> None:
         """
         Open the connect wallet window.
 
         :param callbacks: Callbacks to execute.
+        :param check_proof: Check proof if True.
         :param proof_payload: Payload for ton_proof.
 
         If check_proof is True and proof_payload is not specified, it will be generated automatically.
@@ -192,6 +196,7 @@ class ATCManager:
         await self.state.update_data(
             app_wallet=app_wallet.to_dict(),
             proof_payload=proof_payload,
+            check_proof=check_proof,
         )
 
         task = asyncio.create_task(self.__wait_connect_wallet_task())
@@ -273,6 +278,9 @@ class ATCManager:
         :param callbacks: Callbacks to execute.
         :param transaction: The transaction details.
         """
+        data = await self.state.get_data()
+        last_rpc_request_id = data.get("rpc_request_id", 0)
+
         await self.tonconnect.init_connector(self.user.id)
 
         self.connector._prepare_transaction(transaction)  # noqa
@@ -280,8 +288,7 @@ class ATCManager:
 
         await self.state.update_data(transaction=transaction.to_dict())
         await self.send_transaction_callbacks.add(callbacks)
-
-        task = asyncio.create_task(self.__wait_send_transaction_task())
+        task = asyncio.create_task(self.__wait_send_transaction_task(transaction, last_rpc_request_id))
         self.task_storage.add(task)
 
         text = self.__text_message.get("send_transaction").format(
@@ -297,8 +304,6 @@ class ATCManager:
 
     async def retry_last_send_transaction(self) -> None:
         data = await self.state.get_data()
-        last_rpc_request_id = data.get("rpc_request_id", 0)
-        self.connector.cancel_pending_transaction(last_rpc_request_id)
 
         try:
             transaction = Transaction.from_dict(data.get("transaction"))  # type: ignore
@@ -494,7 +499,11 @@ class ATCManager:
 
                     if state_data.get("check_proof", False):
                         proof_payload = state_data.get("proof_payload")
-                        if not self.connector.wallet.verify_proof(proof_payload):  # type: ignore
+                        if (
+                                proof_payload != self.connector.wallet.ton_proof.payload  # type: ignore
+                                or not self.connector.wallet.verify_proof(proof_payload)  # type: ignore
+                        ):
+                            await self.disconnect_wallet()
                             await self._connect_wallet_proof_wrong()
                             return
 
@@ -514,7 +523,7 @@ class ATCManager:
         finally:
             self.task_storage.remove()
 
-    async def __wait_send_transaction_task(self) -> None:
+    async def __wait_send_transaction_task(self, transaction: Transaction, last_rpc_request_id: int = 0) -> None:
         """
         Wait for the send transaction task.
 
@@ -530,11 +539,11 @@ class ATCManager:
         :raises Exception: Any unexpected exception during the process.
         """
         try:
-            data = await self.state.get_data()
-            last_rpc_request_id = data.get("rpc_request_id", 0)
-            self.connector.cancel_pending_transaction(last_rpc_request_id)
+            try:
+                self.connector.cancel_pending_transaction(last_rpc_request_id)
+            except TonConnectError:
+                pass
 
-            transaction = Transaction.from_dict(data.get("transaction"))  # type: ignore
             rpc_request_id = await self.connector.send_transaction(transaction)
             await self.state.update_data(rpc_request_id=rpc_request_id)
 
