@@ -31,7 +31,10 @@ from tonutils.tonconnect.utils.exceptions import (
     UserRejectsError,
     TonConnectError,
 )
-from tonutils.tonconnect.utils.proof import generate_proof_payload
+from tonutils.tonconnect.utils.proof import (
+    generate_proof_payload,
+    verify_proof_payload,
+)
 
 from .tonconnect.callbacks import (
     ConnectWalletCallbackStorage,
@@ -40,7 +43,10 @@ from .tonconnect.callbacks import (
 from .tonconnect.models import (
     ATCUser,
     ConnectWalletCallbacks,
-    SendTransactionCallbacks, InfoWallet, AccountWallet, )
+    SendTransactionCallbacks,
+    InfoWallet,
+    AccountWallet,
+)
 from .tonconnect.tasks import TaskStorage
 from .utils.exceptions import (
     LanguageCodeNotSupported,
@@ -190,12 +196,14 @@ class ATCManager:
         app_wallet_dict = state_data.get("app_wallet") or wallets[0].to_dict()
         app_wallet = WalletApp.from_dict(app_wallet_dict)
 
+        is_custom_proof = proof_payload is not None
         ton_proof = proof_payload or generate_proof_payload()
         universal_url = await self.connector.connect_wallet(app_wallet, ton_proof=ton_proof)
 
         await self.state.update_data(
             app_wallet=app_wallet.to_dict(),
-            proof_payload=proof_payload,
+            is_custom_proof=is_custom_proof,
+            proof_payload=ton_proof,
             check_proof=check_proof,
         )
 
@@ -499,10 +507,14 @@ class ATCManager:
 
                     if state_data.get("check_proof", False):
                         proof_payload = state_data.get("proof_payload")
-                        if (
-                                proof_payload != self.connector.wallet.ton_proof.payload  # type: ignore
-                                or not self.connector.wallet.verify_proof(proof_payload)  # type: ignore
-                        ):
+                        is_custom_proof = state_data.get("is_custom_proof")
+
+                        if is_custom_proof:
+                            is_valid_proof = self.connector.proof.payload == proof_payload
+                        else:
+                            is_valid_proof = verify_proof_payload(proof_payload, self.connector.wallet)
+
+                        if not is_valid_proof:
                             await self.disconnect_wallet()
                             await self._connect_wallet_proof_wrong()
                             return
