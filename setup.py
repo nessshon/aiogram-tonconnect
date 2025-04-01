@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="aiogram-tonconnect",
-    version="0.14.7",
+    version="0.14.8",
     author="nessshon",
     description=(
         "aiogram-tonconnect is a user-friendly library for integrating TON Connect UI "
@@ -28,7 +28,7 @@ setuptools.setup(
         "pillow>=10.0.0",
         "qrcode-styled>=0.2.2",
         "redis>=5.0.5",
-        "tonutils>=0.2.4",
+        "tonutils>=0.2.8",
     ],
     classifiers=[
         "Development Status :: 4 - Beta",
