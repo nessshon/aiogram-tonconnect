@@ -62,6 +62,7 @@ async def main():
     tonconnect = TonConnect(
         manifest_url=config.MANIFEST_URL,
         storage=ATCRedisStorage(storage.redis),
+        wallets_fallback_file_path="./wallets.json",
     )
     dp.update.middleware.register(
         AiogramTonConnectMiddleware(
