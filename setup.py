@@ -23,12 +23,12 @@ setuptools.setup(
     package_data={"aiogram_tonconnect": ["py.typed"]},
     python_requires=">=3.10",
     install_requires=[
-        "aiogram>=3.0.0",
+        "aiogram>=3.0.0,<=3.20.0",
         "cachetools>=5.3.0",
         "pillow>=10.0.0",
         "qrcode-styled>=0.2.2",
         "redis>=5.0.5",
-        "tonutils>=0.2.8",
+        "tonutils>=0.4.5",
     ],
     classifiers=[
         "Development Status :: 4 - Beta",
