@@ -107,16 +107,16 @@ async def send_amount_ton_window(bot: Bot, atc_manager: ATCManager) -> None:
     await atc_manager.state.set_state(UserState.send_amount_ton)
 
 
-async def transaction_info_windows(bot: Bot, atc_manager: ATCManager, boc: str) -> None:
+async def transaction_info_windows(bot: Bot, atc_manager: ATCManager, boc: str, normalized_hash: str) -> None:
     """
     Display the transaction information to the user.
     """
     # Generate text showing transaction details
     text = (
         "Транзакция успешно отправлена!\n\n"
-        f"boc:\n{boc}" if atc_manager.user.language_code == "ru" else
+        f"boc:\n{boc}\n\nhash: {normalized_hash}" if atc_manager.user.language_code == "ru" else
         "Transaction successfully sent!\n\n"
-        f"boc:\n{boc}"
+        f"boc:\n{boc}\n\nhash: {normalized_hash}"
     )
 
     # Create a button to navigate back to the main menu
