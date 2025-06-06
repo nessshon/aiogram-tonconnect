@@ -121,7 +121,7 @@ class AiogramTonConnectHandlers:
         if call.data == "back":
             state_data = await atc_manager.state.get_data()
             last_rpc_request_id = state_data.get("last_rpc_request_id", 0)
-            atc_manager.connector.cancel_pending_transaction(last_rpc_request_id)
+            atc_manager.connector.cancel_pending_request(last_rpc_request_id)
             await atc_manager.execute_transaction_before_callback()
 
         await call.answer()

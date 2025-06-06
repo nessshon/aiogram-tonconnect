@@ -25,15 +25,12 @@ from tonutils.tonconnect.models import (
     Transaction,
     SendTransactionResponse,
 )
+from tonutils.tonconnect.utils import generate_proof_payload
 from tonutils.tonconnect.utils.exceptions import (
     WalletNotConnectedError,
     RequestTimeoutError,
     UserRejectsError,
     TonConnectError,
-)
-from tonutils.tonconnect.utils.proof import (
-    generate_proof_payload,
-    verify_proof_payload,
 )
 
 from .tonconnect.callbacks import (
@@ -44,8 +41,6 @@ from .tonconnect.models import (
     ATCUser,
     ConnectWalletCallbacks,
     SendTransactionCallbacks,
-    InfoWallet,
-    AccountWallet,
 )
 from .tonconnect.tasks import TaskStorage
 from .utils.exceptions import (
@@ -168,6 +163,7 @@ class ATCManager:
             callbacks: ConnectWalletCallbacks,
             check_proof: bool = True,
             proof_payload: Optional[str] = None,
+            redirect_url: str = "back",
     ) -> None:
         """
         Open the connect wallet window.
@@ -175,6 +171,7 @@ class ATCManager:
         :param callbacks: Callbacks to execute.
         :param check_proof: Check proof if True.
         :param proof_payload: Payload for ton_proof.
+        :param redirect_url: The URL to which the user should be redirected after connecting.
 
         If check_proof is True and proof_payload is not specified, it will be generated automatically.
         If check_proof is True and proof_payload is specified, the provided proof_payload will be used.
@@ -196,13 +193,15 @@ class ATCManager:
         app_wallet_dict = state_data.get("app_wallet") or wallets[0].to_dict()
         app_wallet = WalletApp.from_dict(app_wallet_dict)
 
-        is_custom_proof = proof_payload is not None
         ton_proof = proof_payload or generate_proof_payload()
-        universal_url = await self.connector.connect_wallet(app_wallet, ton_proof=ton_proof)
+        universal_url = await self.connector.connect_wallet(
+            app_wallet,
+            redirect_url=redirect_url,
+            ton_proof=ton_proof
+        )
 
         await self.state.update_data(
             app_wallet=app_wallet.to_dict(),
-            is_custom_proof=is_custom_proof,
             proof_payload=ton_proof,
             check_proof=check_proof,
         )
@@ -292,7 +291,11 @@ class ATCManager:
         await self.tonconnect.init_connector(self.user.id)
 
         self.connector._prepare_transaction(transaction)  # noqa
-        self.connector._verify_send_transaction_feature(len(transaction.messages))  # noqa
+        if self.connector.device is not None and self.connector.wallet is not None:
+            self.connector.device.verify_send_transaction_feature(
+                self.connector.wallet,
+                len(transaction.messages),
+            )
 
         await self.state.update_data(transaction=transaction.to_dict())
         await self.send_transaction_callbacks.add(callbacks)
@@ -497,22 +500,18 @@ class ATCManager:
             async with self.connector.connect_wallet_context() as result:
                 if isinstance(result, WalletInfo):
                     state_data = await self.state.get_data()
-                    info_wallet = InfoWallet(**self.connector.wallet.to_dict())  # type: ignore
-                    account_wallet = AccountWallet.from_dict(self.connector.account.to_dict())  # type: ignore
-
-                    await self.state.update_data(
-                        info_wallet=info_wallet.to_dict(),
-                        account_wallet=account_wallet.to_dict(),
-                    )
+                    if self.connector.wallet is not None and self.connector.account is not None:
+                        await self.state.update_data(
+                            info_wallet=self.connector.wallet.to_dict(),
+                            account_wallet=self.connector.account.to_dict(),
+                        )
 
                     if state_data.get("check_proof", False):
-                        proof_payload = state_data.get("proof_payload")
-                        is_custom_proof = state_data.get("is_custom_proof")
+                        if self.connector.wallet is None:
+                            raise RuntimeError("Wallet must not be None during proof verification")
 
-                        if is_custom_proof:
-                            is_valid_proof = self.connector.proof.payload == proof_payload
-                        else:
-                            is_valid_proof = verify_proof_payload(proof_payload, self.connector.wallet)
+                        proof_payload = state_data.get("proof_payload")
+                        is_valid_proof = self.connector.wallet.verify_proof_payload(proof_payload)
 
                         if not is_valid_proof:
                             await self.disconnect_wallet()
@@ -552,19 +551,28 @@ class ATCManager:
         """
         try:
             try:
-                self.connector.cancel_pending_transaction(last_rpc_request_id)
+                self.connector.cancel_pending_request(last_rpc_request_id)
             except TonConnectError:
                 pass
 
             rpc_request_id = await self.connector.send_transaction(transaction)
             await self.state.update_data(rpc_request_id=rpc_request_id)
 
-            async with self.connector.pending_transaction_context(rpc_request_id) as result:
+            async with self.connector.pending_request_context(rpc_request_id) as result:
                 if isinstance(result, SendTransactionResponse):
                     last_transaction_boc = result.boc
+                    last_normalized_hash = result.normalized_hash
+
                     self.__data["boc"] = last_transaction_boc
+                    self.__data["normalized_hash"] = last_normalized_hash
+
                     self.user.last_transaction_boc = last_transaction_boc
-                    await self.state.update_data(last_transaction_boc=last_transaction_boc)
+                    self.user.last_normalized_hash = last_normalized_hash
+
+                    await self.state.update_data(
+                        last_transaction_boc=last_transaction_boc,
+                        last_normalized_hash=last_normalized_hash,
+                    )
                     await self.execute_transaction_after_callback()
 
                 elif isinstance(result, RequestTimeoutError):
