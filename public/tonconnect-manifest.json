@@ -1,6 +1,6 @@
 {
-  "url": "https://t.me/aiogramTONConnectBot",
-  "name": "Demo Bot with aiogram",
+  "url": "https://raw.githubusercontent.com/nessshon/aiogram-tonconnect/main/README.md",
+  "name": "aiogram TON Connect",
   "iconUrl": "https://raw.githubusercontent.com/nessshon/aiogram-tonconnect/refs/heads/main/public/icon.png",
   "termsOfUseUrl": "https://raw.githubusercontent.com/nessshon/aiogram-tonconnect/refs/heads/main/public/terms-of-use.txt",
   "privacyPolicyUrl": "https://raw.githubusercontent.com/nessshon/aiogram-tonconnect/refs/heads/main/public/privacy-policy.txt"

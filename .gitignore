@@ -44,8 +44,10 @@ htmlcov/
 .coverage
 .coverage.*
 .cache
+.examples
 nosetests.xml
 coverage.xml
+test.py
 *.cover
 *.py,cover
 .hypothesis/
@@ -111,11 +113,11 @@ ENV/
 env.bak/
 venv.bak/
 
-# Spyder src settings
+# Spyder project settings
 .spyderproject
 .spyproject
 
-# Rope src settings
+# Rope project settings
 .ropeproject
 
 # mkdocs documentation
@@ -126,8 +128,17 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# uv
+uv.lock
+
 # Pyre type checker
 .pyre/
 
 # Ignore .idea files
 .idea/
+.DS_Store
+
+# Claude Code
+CLAUDE.md
+.claude/
+.docs/

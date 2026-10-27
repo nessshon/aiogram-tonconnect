@@ -1,66 +1,95 @@
-# 📦 aiogram TON Connect UI
+# 📦 aiogram TON Connect
 
 [![TON](https://img.shields.io/badge/TON-grey?logo=TON&logoColor=40AEF0)](https://ton.org)
+![Python Versions](https://img.shields.io/badge/Python-3.10%20--%203.14-black?color=FFE873&labelColor=3776AB)
 [![PyPI](https://img.shields.io/pypi/v/aiogram-tonconnect.svg?color=FFE873&labelColor=3776AB)](https://pypi.python.org/pypi/aiogram-tonconnect)
-![Python Versions](https://img.shields.io/badge/Python-3.8%20--%203.12-black?color=FFE873&labelColor=3776AB)
 [![License](https://img.shields.io/github/license/nessshon/aiogram-tonconnect)](https://github.com/nessshon/aiogram-tonconnect/blob/main/LICENSE)
+[![Donate](https://img.shields.io/badge/Donate-TON-blue)](https://tonviewer.com/UQCZq3_Vd21-4y4m7Wc-ej9NFOhh_qvdfAkAYAOHoQ__Ness)
 
-
-<img src="https://telegra.ph//file/9e28473c8da8989fdf027.jpg">
+![Image](https://raw.githubusercontent.com/nessshon/aiogram-tonconnect/main/public/banner.png)
 
 ![Downloads](https://pepy.tech/badge/aiogram-tonconnect)
 ![Downloads](https://pepy.tech/badge/aiogram-tonconnect/month)
 ![Downloads](https://pepy.tech/badge/aiogram-tonconnect/week)
 
-**Aiogram TON Connect UI** is a middleware library that streamlines the integration
-of [TON Connect](https://github.com/ton-connect) technology into Telegram bots based
-on [aiogram](https://github.com/aiogram/). It offers a pre-built user interface and orchestrates the interaction flow
-for connecting wallets and initiating transactions. The library takes care of all user interactions with TON Connect
-within the bot, encompassing the presentation of QR codes, texts, and keyboards, along with the handling of timeouts and
-user cancellations.
+### [TON Connect](https://github.com/ton-connect) for [aiogram](https://github.com/aiogram/aiogram) bots
 
-- **Usage Example**: Explore practical implementations in
-  the [example](https://github.com/nessshon/aiogram-tonconnect/tree/main/example) section.
-- **Bot Example**: Check out the live demonstration with [@aiogramTONConnectBot](https://t.me/aiogramTONConnectBot).
+Wallet connection, transactions, and data signing in Telegram bots.  
+The library shows the screens of each request and passes the results to your handlers as aiogram events.  
+See the [example bot](https://github.com/nessshon/aiogram-tonconnect/blob/main/example/bot.py) or try the
+[demo bot](https://t.me/aiogramTONConnectBot) in Telegram.
+
+> Built on [ton-connect](https://github.com/nessshon/ton-connect), the Python SDK for TON Connect.
+
+**Features**
+
+- **Wallet Connection** — QR code, wallet list with pages, and a button that opens the chosen wallet
+- **Requests** — send transactions, sign messages for gasless relays, sign text, binary, and cell data
+- **TON Proof** — wallet ownership and data signature verification
+- **Events** — results come to router handlers with status, error, and the wallet answer
+- **Restarts** — sessions and pending requests live in the FSM storage and resume after a restart
+- **Screens** — texts in any language, button styles, or your own screens
+
+> Support this project — TON: `donate.ness.ton`  
+> `UQCZq3_Vd21-4y4m7Wc-ej9NFOhh_qvdfAkAYAOHoQ__Ness`
 
 ## Installation
 
-```bach
+```bash
 pip install aiogram-tonconnect
 ```
 
-## Features
+## Usage
 
-* Ready-to-Use User Interface
-* Middleware Functionality
-* Interface Customization
-* Multilingual Support
-* QR Code Generation
+```python
+import asyncio
 
-## Screenshots
+from aiogram import Bot, Dispatcher
+from aiogram.filters import CommandStart
+from aiogram.types import Message
+from ton_connect.models import Wallet
 
-|                                                                                                                      |                                                                                                                      |                                                                                                                      |
-|----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| [![Image 1](https://telegra.ph//file/555175fd35c05370a64d4.jpg)](https://telegra.ph//file/555175fd35c05370a64d4.jpg) | [![Image 2](https://telegra.ph//file/ef770d825534cf049c1bb.jpg)](https://telegra.ph//file/ef770d825534cf049c1bb.jpg) | [![Image 3](https://telegra.ph//file/502a80771bc07acc6e93b.jpg)](https://telegra.ph//file/502a80771bc07acc6e93b.jpg) |
-| [![Image 4](https://telegra.ph//file/99443226ba404a86586ad.jpg)](https://telegra.ph//file/99443226ba404a86586ad.jpg) | [![Image 5](https://telegra.ph//file/74fba6fca9c273d5f6f30.jpg)](https://telegra.ph//file/74fba6fca9c273d5f6f30.jpg) | [![Image 6](https://telegra.ph//file/656593c298123fea6be60.jpg)](https://telegra.ph//file/656593c298123fea6be60.jpg) |
+from aiogram_tonconnect import TonConnectContext, TonConnectEvent, TonConnectRouter, setup_tonconnect
 
-## Support
+BOT_TOKEN = "12345:qwerty"
+MANIFEST_URL = "https://raw.githubusercontent.com/nessshon/aiogram-tonconnect/main/public/tonconnect-manifest.json"
 
-Supported by [TON Society](https://github.com/ton-society/grants-and-bounties), Grants and Bounties program.
+dp = Dispatcher()
+router = TonConnectRouter()
 
-## Donations
 
-**TON** - `UQCDrgGaI6gWK-qlyw69xWZosurGxrpRgIgSkVsgahUtxZR0`
+@dp.message(CommandStart())
+async def start(message: Message, tc: TonConnectContext) -> None:
+    # Shows the connect screen: QR code, wallet list, Back
+    await tc.connect()
 
-**USDT** (TRC-20) - `TGKmm9H3FApFw8xcgRcZDHSku68vozAjo9`
 
-## Contribution
+@router.connect()
+async def connected(event: TonConnectEvent, wallet: Wallet | None) -> None:
+    text = f"Connected: {wallet.account.address.to_str()}" if wallet else "Not connected"
+    await event.message.edit_text(text)
 
-We welcome your contributions! If you have ideas for improvement or have identified a bug, please create an issue or
-submit a pull request.
+
+async def main() -> None:
+    bot = Bot(BOT_TOKEN)
+    dp.include_router(router)
+    setup_tonconnect(dp, bot, manifest_url=MANIFEST_URL)
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## Notes
+
+- **Manifest** — the example uses a public one; host your own `tonconnect-manifest.json` for a real bot
+- **Storage** — sessions and pending requests live in the FSM storage; use `RedisStorage` to keep them after a restart
+- **TON Proof** — pass `TonProof` to `setup_tonconnect` to verify wallet ownership and signed data
+- **Screens** — subclass `View` to change texts, language, the QR code, or whole screens
+- **Cancel** — call `tc.cancel()` to end an operation before replacing its screen
 
 ## License
 
 This repository is distributed under
-the [MIT License](https://github.com/nessshon/aiogram-tonconnect/blob/main/LICENSE). Feel free to use, modify, and
-distribute the code in accordance with the terms of the license.
+the [MIT License](https://github.com/nessshon/aiogram-tonconnect/blob/main/LICENSE).
